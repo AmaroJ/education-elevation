@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2 } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2, Play, Pause, Volume, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -19,6 +19,9 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>(Array(content.practice.length).fill(''));
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   const handleBack = () => {
     navigate(`/module/${moduleId}`);
@@ -26,6 +29,11 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    // Pause video when switching away from content
+    if (tab !== 'content' && videoRef.current && !videoRef.current.paused) {
+      videoRef.current.pause();
+      setIsVideoPlaying(false);
+    }
   };
   
   const handleAnswerSelect = (answer: string) => {
@@ -64,6 +72,24 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const handleComplete = () => {
     // This would normally update the user progress in a real app
     navigate(`/module/${moduleId}`);
+  };
+
+  const handleTogglePlay = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsVideoPlaying(!isVideoPlaying);
+    }
+  };
+
+  const handleToggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(!isMuted);
+    }
   };
   
   const currentQuestion = content.practice[currentQuestionIndex];
@@ -122,6 +148,41 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
           {activeTab === 'content' ? (
             <div className="max-w-3xl mx-auto">
               <h1 className="text-2xl font-semibold mb-6">{content.title}</h1>
+              
+              {content.videoUrl && (
+                <div className="mb-6 rounded-xl overflow-hidden relative">
+                  <div className="aspect-w-16 aspect-h-9 bg-black">
+                    <video 
+                      ref={videoRef}
+                      src={content.videoUrl}
+                      className="w-full h-full object-contain"
+                      poster={content.videoPoster || ""}
+                      onEnded={() => setIsVideoPlaying(false)}
+                    />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-white hover:bg-white/20" 
+                        onClick={handleTogglePlay}
+                      >
+                        {isVideoPlaying ? <Pause size={20} /> : <Play size={20} />}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-white hover:bg-white/20" 
+                        onClick={handleToggleMute}
+                      >
+                        {isMuted ? <VolumeX size={20} /> : <Volume size={20} />}
+                      </Button>
+                    </div>
+                    <div className="text-white text-sm">{content.videoCaption || "Material visual de apoyo"}</div>
+                  </div>
+                </div>
+              )}
               
               <div 
                 className="prose prose-slate max-w-none"

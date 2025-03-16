@@ -10,8 +10,11 @@ const Module = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
   const [module, setModule] = useState(modules.find(m => m.id === moduleId));
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    setIsLoading(true);
+    
     // Find the module
     const foundModule = modules.find(m => m.id === moduleId);
     
@@ -26,10 +29,25 @@ const Module = () => {
     }
     
     setModule(foundModule);
+    setIsLoading(false);
   }, [moduleId, navigate]);
   
-  if (!module) {
-    return <div>Cargando...</div>;
+  if (isLoading || !module) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-28 pb-16 px-4 sm:px-6 md:px-8 lg:px-12 max-w-6xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-pulse flex flex-col items-center">
+              <div className="h-12 w-2/3 bg-gray-200 rounded mb-4"></div>
+              <div className="h-4 w-full bg-gray-200 rounded mb-3"></div>
+              <div className="h-4 w-11/12 bg-gray-200 rounded mb-3"></div>
+              <div className="h-4 w-10/12 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
   }
   
   return (

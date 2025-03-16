@@ -1,4 +1,3 @@
-
 export interface Topic {
   id: string;
   title: string;
@@ -26,6 +25,9 @@ export interface LessonContent {
     options: string[];
     correctAnswer: string;
   }[];
+  videoUrl?: string;
+  videoPoster?: string;
+  videoCaption?: string;
 }
 
 export interface UserProgress {
@@ -366,131 +368,258 @@ export const userProgress: UserProgress = {
   lastActivity: new Date().toISOString()
 };
 
-export const getLessonContent = (topicId: string): LessonContent => {
-  // This would normally come from an API
-  // For now we'll just provide some sample content based on the topic ID
-  
-  const sampleLessons: Record<string, LessonContent> = {
-    'greetings': {
-      title: 'Saludos y Presentaciones',
-      content: `
-        <h2>Los saludos en inglés</h2>
-        <p>Los saludos son la forma más básica de iniciar una conversación en cualquier idioma. En inglés, tenemos diferentes saludos dependiendo del momento del día y del nivel de formalidad.</p>
-        
-        <h3>Saludos informales</h3>
-        <ul>
-          <li><strong>Hi</strong> - Hola</li>
-          <li><strong>Hey</strong> - Ey</li>
-          <li><strong>What's up?</strong> - ¿Qué tal?</li>
-          <li><strong>How's it going?</strong> - ¿Cómo va todo?</li>
-        </ul>
-        
-        <h3>Saludos formales</h3>
-        <ul>
-          <li><strong>Good morning</strong> - Buenos días (hasta mediodía)</li>
-          <li><strong>Good afternoon</strong> - Buenas tardes (después de mediodía)</li>
-          <li><strong>Good evening</strong> - Buenas noches (al anochecer)</li>
-          <li><strong>How do you do?</strong> - Encantado/a (muy formal)</li>
-        </ul>
-        
-        <h3>Presentándote</h3>
-        <p>Para presentarte, puedes usar estas frases:</p>
-        <ul>
-          <li><strong>My name is [nombre]</strong> - Mi nombre es [nombre]</li>
-          <li><strong>I'm [nombre]</strong> - Soy [nombre]</li>
-          <li><strong>Nice to meet you</strong> - Encantado/a de conocerte</li>
-          <li><strong>Pleased to meet you</strong> - Un placer conocerte</li>
-        </ul>
-      `,
-      examples: [
-        "Hi, I'm John. Nice to meet you.",
-        "Good morning! How are you today?",
-        "Hey Sarah, what's up?",
-        "Good evening, my name is David. I'm pleased to meet you."
-      ],
-      practice: [
-        {
-          question: "¿Cómo saludarías a alguien formalmente por la mañana?",
-          options: ["Hi!", "Good morning", "What's up?", "Hey there"],
-          correctAnswer: "Good morning"
-        },
-        {
-          question: "¿Cuál de estas expresiones se usa para presentarte?",
-          options: ["How are you?", "See you later", "My name is...", "Good night"],
-          correctAnswer: "My name is..."
-        },
-        {
-          question: "Es la primera vez que conoces a alguien, ¿qué dirías después de presentarte?",
-          options: ["Goodbye", "Nice to meet you", "See you tomorrow", "I'm busy"],
-          correctAnswer: "Nice to meet you"
-        }
-      ]
-    },
-    'present-simple': {
-      title: 'Presente Simple',
-      content: `
-        <h2>El Presente Simple en inglés</h2>
-        <p>El presente simple es un tiempo verbal que usamos para hablar de hábitos, rutinas, hechos generales y verdades absolutas.</p>
-        
-        <h3>Estructura básica</h3>
-        <p>Para la mayoría de los verbos, la forma es la misma que el infinitivo sin 'to':</p>
-        <ul>
-          <li><strong>I play</strong> tennis every weekend. - Juego al tenis todos los fines de semana.</li>
-          <li><strong>You work</strong> in a bank. - Trabajas en un banco.</li>
-          <li><strong>We study</strong> English. - Estudiamos inglés.</li>
-        </ul>
-        
-        <h3>Tercera persona del singular</h3>
-        <p>Para he/she/it (él/ella/eso), añadimos -s al final del verbo:</p>
-        <ul>
-          <li><strong>He plays</strong> tennis every weekend. - Él juega al tenis todos los fines de semana.</li>
-          <li><strong>She works</strong> in a bank. - Ella trabaja en un banco.</li>
-          <li><strong>It costs</strong> five dollars. - Cuesta cinco dólares.</li>
-        </ul>
-        
-        <h3>Reglas especiales para añadir -s</h3>
-        <ul>
-          <li>Para verbos que terminan en -o, -ch, -sh, -ss, -x, añadimos -es: <strong>go → goes</strong>, <strong>watch → watches</strong></li>
-          <li>Para verbos que terminan en consonante + y, cambiamos la y por i y añadimos -es: <strong>study → studies</strong></li>
-        </ul>
-      `,
-      examples: [
-        "I work in a hospital. (Trabajo en un hospital)",
-        "She works in a hospital. (Ella trabaja en un hospital)",
-        "They don't live in Madrid. (Ellos no viven en Madrid)",
-        "Does he speak English? (¿Habla él inglés?)"
-      ],
-      practice: [
-        {
-          question: "Complete la oración: 'He ___ (go) to the gym every day.'",
-          options: ["go", "goes", "going", "goed"],
-          correctAnswer: "goes"
-        },
-        {
-          question: "¿Cuál es la forma negativa de 'I play tennis'?",
-          options: ["I not play tennis", "I don't play tennis", "I doesn't play tennis", "I am not play tennis"],
-          correctAnswer: "I don't play tennis"
-        },
-        {
-          question: "Complete la pregunta: '___ she ___ (study) French?'",
-          options: ["Do, study", "Does, study", "Does, studies", "Do, studies"],
-          correctAnswer: "Does, study"
-        }
-      ]
-    }
-  };
-  
-  // Return the requested lesson content or a default template
-  return sampleLessons[topicId] || {
-    title: "Contenido de la lección",
-    content: "<p>Contenido de la lección no encontrado. Estamos trabajando en ello.</p>",
-    examples: ["Ejemplo no disponible"],
-    practice: [
-      {
-        question: "Pregunta de práctica",
-        options: ["Opción 1", "Opción 2", "Opción 3", "Opción 4"],
-        correctAnswer: "Opción 1"
-      }
-    ]
-  };
-};
+export function getLessonContent(topicId: string): LessonContent {
+  switch (topicId) {
+    case 'greetings':
+      return {
+        title: 'Saludos y presentaciones en inglés',
+        content: `
+          <p>Los saludos son una parte fundamental de cualquier idioma, y el inglés no es una excepción. Aprender a saludar correctamente te permitirá establecer un primer contacto positivo en cualquier situación social o profesional.</p>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Saludos formales</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Good morning</strong> - Buenos días (hasta el mediodía)</li>
+            <li><strong>Good afternoon</strong> - Buenas tardes (desde el mediodía hasta las 6 pm aproximadamente)</li>
+            <li><strong>Good evening</strong> - Buenas noches (desde las 6 pm hasta la hora de dormir)</li>
+            <li><strong>Hello, Mr./Mrs./Ms. [apellido]</strong> - Hola, Sr./Sra./Srta. [apellido]</li>
+            <li><strong>How do you do?</strong> - Encantado/a de conocerle (muy formal)</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Saludos informales</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Hi/Hey</strong> - Hola</li>
+            <li><strong>What's up?</strong> - ¿Qué tal? ¿Qué hay?</li>
+            <li><strong>How's it going?</strong> - ¿Cómo va todo?</li>
+            <li><strong>How are you?</strong> - ¿Cómo estás?</li>
+            <li><strong>Good to see you</strong> - Me alegro de verte</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Presentaciones</h2>
+          <p>Para presentarte a ti mismo:</p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>My name is...</strong> - Mi nombre es...</li>
+            <li><strong>I'm...</strong> - Soy...</li>
+            <li><strong>Nice to meet you</strong> - Encantado/a de conocerte</li>
+            <li><strong>Pleased to meet you</strong> - Encantado/a de conocerte (más formal)</li>
+          </ul>
+          
+          <p class="mt-4">Para presentar a otra persona:</p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>This is...</strong> - Este/a es...</li>
+            <li><strong>I'd like to introduce you to...</strong> - Me gustaría presentarte a...</li>
+            <li><strong>Have you met...?</strong> - ¿Has conocido a...?</li>
+          </ul>
+        `,
+        examples: [
+          "Hello, my name is John. Nice to meet you!",
+          "Good morning, Mr. Smith. How are you today?",
+          "Hey Sarah! What's up?",
+          "I'd like to introduce you to my colleague, David.",
+          "Hi everyone! I'm Emma, the new marketing manager."
+        ],
+        practice: [
+          {
+            question: "¿Cuál de los siguientes es un saludo formal?",
+            options: ["Hey there!", "What's up?", "Good afternoon, Mr. Johnson.", "How's it going?"],
+            correctAnswer: "Good afternoon, Mr. Johnson."
+          },
+          {
+            question: "¿Cómo te presentarías formalmente a alguien?",
+            options: ["What's up? I'm Jack.", "Hey! Jack here.", "My name is Jack. Pleased to meet you.", "Yo! I'm Jack."],
+            correctAnswer: "My name is Jack. Pleased to meet you."
+          },
+          {
+            question: "¿Qué responderías a 'How are you?'?",
+            options: ["I'm 25 years old.", "I'm from Spain.", "I'm fine, thank you. And you?", "Yes, I am."],
+            correctAnswer: "I'm fine, thank you. And you?"
+          },
+          {
+            question: "¿Cuál es la forma correcta de presentar a alguien?",
+            options: ["This is my friend, Sarah.", "Her name Sarah.", "Sarah is she.", "Meet to Sarah."],
+            correctAnswer: "This is my friend, Sarah."
+          },
+          {
+            question: "¿Qué saludo utilizarías por la mañana?",
+            options: ["Good night", "Good evening", "Good afternoon", "Good morning"],
+            correctAnswer: "Good morning"
+          }
+        ],
+        videoUrl: "https://storage.googleapis.com/my-english-videos/greetings-intro.mp4",
+        videoPoster: "https://storage.googleapis.com/my-english-videos/greetings-poster.jpg",
+        videoCaption: "Aprende los saludos básicos en inglés"
+      };
+    case 'daily-routines':
+      return {
+        title: 'Rutinas diarias en inglés',
+        content: `
+          <p>Hablar sobre nuestras rutinas diarias es algo muy común en las conversaciones cotidianas. Aprender el vocabulario y las estructuras para describir lo que hacemos regularmente te ayudará a mantener conversaciones más fluidas.</p>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Vocabulario relacionado con rutinas diarias</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Wake up</strong> - Despertarse</li>
+            <li><strong>Get up</strong> - Levantarse</li>
+            <li><strong>Take a shower</strong> - Ducharse</li>
+            <li><strong>Brush your teeth</strong> - Cepillarse los dientes</li>
+            <li><strong>Get dressed</strong> - Vestirse</li>
+            <li><strong>Have breakfast/lunch/dinner</strong> - Desayunar/almorzar/cenar</li>
+            <li><strong>Go to work/school</strong> - Ir al trabajo/escuela</li>
+            <li><strong>Start work/class</strong> - Empezar a trabajar/la clase</li>
+            <li><strong>Take a break</strong> - Tomar un descanso</li>
+            <li><strong>Finish work/class</strong> - Terminar de trabajar/la clase</li>
+            <li><strong>Go home</strong> - Ir a casa</li>
+            <li><strong>Cook dinner</strong> - Preparar la cena</li>
+            <li><strong>Watch TV</strong> - Ver televisión</li>
+            <li><strong>Go to bed</strong> - Irse a la cama</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Expresiones de tiempo</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>In the morning/afternoon/evening</strong> - Por la mañana/tarde/noche</li>
+            <li><strong>At night</strong> - Por la noche</li>
+            <li><strong>At [hora]</strong> - A las [hora]</li>
+            <li><strong>Every day</strong> - Todos los días</li>
+            <li><strong>Once/twice/three times a week</strong> - Una vez/dos veces/tres veces por semana</li>
+            <li><strong>On weekdays</strong> - Entre semana</li>
+            <li><strong>On weekends</strong> - Los fines de semana</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Presente simple para rutinas</h2>
+          <p>Para hablar de rutinas usamos el presente simple. Recuerda que en la tercera persona singular (he/she/it) el verbo lleva una 's' al final.</p>
+          
+          <p class="mt-4">Ejemplos:</p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>I wake up at 7:00.</strong> - Me despierto a las 7:00.</li>
+            <li><strong>She wakes up at 7:00.</strong> - Ella se despierta a las 7:00.</li>
+            <li><strong>We have breakfast at 8:00.</strong> - Desayunamos a las 8:00.</li>
+            <li><strong>He has breakfast at 8:00.</strong> - Él desayuna a las 8:00.</li>
+          </ul>
+        `,
+        examples: [
+          "I usually wake up at 6:30 AM on weekdays.",
+          "After breakfast, I brush my teeth and get dressed.",
+          "She takes the bus to work every morning.",
+          "We have lunch in the cafeteria at 1 PM.",
+          "On weekends, they often go to the cinema in the evening."
+        ],
+        practice: [
+          {
+            question: "¿Cómo se dice 'Despertarse'?",
+            options: ["Get up", "Wake up", "Stand up", "Go up"],
+            correctAnswer: "Wake up"
+          },
+          {
+            question: "Completa la frase: 'I ___ breakfast at 8:00 AM.'",
+            options: ["do", "make", "have", "take"],
+            correctAnswer: "have"
+          },
+          {
+            question: "¿Qué opción describe correctamente la rutina de María? 'María ___ at 7:00 AM.'",
+            options: ["wake up", "wakes up", "waking up", "waked up"],
+            correctAnswer: "wakes up"
+          },
+          {
+            question: "¿Cómo expresarías 'Yo voy al trabajo todos los días'?",
+            options: ["I going to work every day.", "I goes to work every day.", "I go to work every day.", "I am go to work every day."],
+            correctAnswer: "I go to work every day."
+          },
+          {
+            question: "¿Cuál es la forma correcta de decir 'Ver la televisión'?",
+            options: ["Look TV", "See TV", "Watch TV", "View TV"],
+            correctAnswer: "Watch TV"
+          }
+        ],
+        videoUrl: "https://storage.googleapis.com/my-english-videos/daily-routines.mp4",
+        videoPoster: "https://storage.googleapis.com/my-english-videos/daily-routines-poster.jpg",
+        videoCaption: "Vocabulario y expresiones para describir tu rutina diaria"
+      };
+    case 'ordering-food':
+      return {
+        title: 'Pedir comida en un restaurante',
+        content: `
+          <p>Pedir comida en un restaurante es una situación habitual cuando viajamos a un país de habla inglesa o incluso en nuestro propio país en restaurantes internacionales. Aprender las expresiones adecuadas te ayudará a sentirte más seguro y a disfrutar de la experiencia gastronómica.</p>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Vocabulario relacionado con restaurantes</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Menu</strong> - Menú, carta</li>
+            <li><strong>Table</strong> - Mesa</li>
+            <li><strong>Waiter/Waitress</strong> - Camarero/Camarera</li>
+            <li><strong>Bill/Check</strong> - Cuenta</li>
+            <li><strong>Tip</strong> - Propina</li>
+            <li><strong>Reservation</strong> - Reserva</li>
+            <li><strong>Starter/Appetizer</strong> - Entrante</li>
+            <li><strong>Main course</strong> - Plato principal</li>
+            <li><strong>Dessert</strong> - Postre</li>
+            <li><strong>Beverage/Drink</strong> - Bebida</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Frases útiles para pedir comida</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>I'd like to make a reservation for...</strong> - Me gustaría hacer una reserva para...</li>
+            <li><strong>A table for [número], please.</strong> - Una mesa para [número], por favor.</li>
+            <li><strong>Could I see the menu, please?</strong> - ¿Podría ver el menú, por favor?</li>
+            <li><strong>What's today's special?</strong> - ¿Cuál es el plato del día?</li>
+            <li><strong>I'll have...</strong> - Tomaré...</li>
+            <li><strong>Can I get...</strong> - Me puede traer...</li>
+            <li><strong>How would you like that cooked?</strong> - ¿Cómo le gustaría que se lo cocinaran?</li>
+            <li><strong>Rare/Medium/Well done</strong> - Poco hecho/Al punto/Muy hecho</li>
+            <li><strong>Can we have the bill, please?</strong> - ¿Nos puede traer la cuenta, por favor?</li>
+            <li><strong>Is service included?</strong> - ¿Está incluido el servicio?</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Recomendaciones y preferencias</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>I'd recommend the...</strong> - Recomendaría el/la...</li>
+            <li><strong>What do you recommend?</strong> - ¿Qué recomienda?</li>
+            <li><strong>I'm vegetarian/vegan</strong> - Soy vegetariano/vegano</li>
+            <li><strong>I have a food allergy.</strong> - Tengo alergia alimentaria.</li>
+            <li><strong>Does this contain...?</strong> - ¿Esto contiene...?</li>
+            <li><strong>This is delicious!</strong> - ¡Esto está delicioso!</li>
+          </ul>
+        `,
+        examples: [
+          "Could I have a table for two, please?",
+          "I'd like the chicken pasta, please.",
+          "What would you recommend for dessert?",
+          "Excuse me, can we have the bill, please?",
+          "Does this dish contain nuts? I have an allergy."
+        ],
+        practice: [
+          {
+            question: "¿Cómo pedirías una mesa para 4 personas?",
+            options: ["I want a table for four people.", "A table for four, please.", "Give me a table for four.", "Four persons need table."],
+            correctAnswer: "A table for four, please."
+          },
+          {
+            question: "¿Cómo pedirías ver el menú?",
+            options: ["Give me the menu.", "I want to see food.", "Could I see the menu, please?", "Where is menu?"],
+            correctAnswer: "Could I see the menu, please?"
+          },
+          {
+            question: "¿Cómo pedirías la cuenta?",
+            options: ["Money now.", "I will pay.", "Finish eating.", "Can we have the bill, please?"],
+            correctAnswer: "Can we have the bill, please?"
+          },
+          {
+            question: "¿Cómo se dice 'plato principal' en inglés?",
+            options: ["Principal plate", "Big food", "Main course", "Chief dish"],
+            correctAnswer: "Main course"
+          },
+          {
+            question: "¿Cómo pedirías una recomendación al camarero?",
+            options: ["Tell me good food.", "What do you recommend?", "What is best for eat?", "Give me your favorite."],
+            correctAnswer: "What do you recommend?"
+          }
+        ],
+        videoUrl: "https://storage.googleapis.com/my-english-videos/restaurant-ordering.mp4",
+        videoPoster: "https://storage.googleapis.com/my-english-videos/restaurant-poster.jpg",
+        videoCaption: "Cómo pedir comida en un restaurante correctamente"
+      };
+    default:
+      return {
+        title: 'Lección no encontrada',
+        content: '<p>Lo sentimos, el contenido de esta lección no está disponible.</p>',
+        examples: [],
+        practice: []
+      };
+  }
+}
