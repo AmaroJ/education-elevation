@@ -52,7 +52,8 @@ const Lesson = () => {
     
     // Check if browser supports the Web Speech API
     const speechSynthesisSupported = 'speechSynthesis' in window;
-    const speechRecognitionSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    const speechRecognitionSupported = 
+      'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
     
     if (!speechSynthesisSupported || !speechRecognitionSupported) {
       toast({
@@ -68,9 +69,31 @@ const Lesson = () => {
     
     // Preload video if it exists
     if (content.videoUrl) {
-      const video = new Audio();
-      video.src = content.videoUrl;
-      video.preload = 'metadata';
+      try {
+        const videoElement = document.createElement('video');
+        videoElement.src = content.videoUrl;
+        videoElement.preload = 'metadata';
+        
+        // Test if video can be played
+        videoElement.load();
+        
+        // Add a listener to check if the video can be played
+        videoElement.addEventListener('canplay', () => {
+          console.log('Video can be played:', content.videoUrl);
+        });
+        
+        // Add a listener to check for errors
+        videoElement.addEventListener('error', (e) => {
+          console.error('Error preloading video:', e);
+          toast({
+            title: "Error con el video",
+            description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
+            variant: "destructive"
+          });
+        });
+      } catch (error) {
+        console.error('Error with video preloading:', error);
+      }
     }
   }, [moduleId, topicId, navigate]);
   

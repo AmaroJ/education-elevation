@@ -1,12 +1,12 @@
-
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2, Play, Pause, Volume, VolumeX, Mic, Headphones, BookOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2, Play, Pause, Volume, VolumeX, Mic, Headphones, BookOpen, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type LessonContent as LessonContentType } from '@/lib/data';
 import { toast } from '@/components/ui/use-toast';
+import AITutor from '@/components/AITutor';
 
 interface LessonContentProps {
   content: LessonContentType;
@@ -26,6 +26,7 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const [transcript, setTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [spokenText, setSpokenText] = useState('');
+  const [showAITutor, setShowAITutor] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
@@ -38,9 +39,10 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
     }
     
     // Initialize speech recognition if supported
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      speechRecognitionRef.current = new SpeechRecognition();
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognitionAPI) {
+      speechRecognitionRef.current = new SpeechRecognitionAPI();
       speechRecognitionRef.current.continuous = false;
       speechRecognitionRef.current.interimResults = true;
       speechRecognitionRef.current.lang = 'en-US';
@@ -138,7 +140,7 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
           console.error("Error playing video:", error);
           toast({
             title: "Error",
-            description: "No se pudo reproducir el video. Inténtalo nuevamente.",
+            description: "No se pudo reproducir el video. Comprueba que la URL del video es válida.",
             variant: "destructive"
           });
         });
@@ -199,6 +201,10 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
     }, 2000);
   };
   
+  const toggleAITutor = () => {
+    setShowAITutor(!showAITutor);
+  };
+  
   const currentQuestion = content.practice[currentQuestionIndex];
   const isAnswerSelected = selectedAnswers[currentQuestionIndex] !== '';
   const isAnswerCorrect = selectedAnswers[currentQuestionIndex] === currentQuestion?.correctAnswer;
@@ -214,16 +220,36 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
           Volver al módulo
         </button>
         
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Progreso de la lección</span>
-          <Progress 
-            value={activeTab === 'practice' 
-              ? ((currentQuestionIndex + 1) / content.practice.length) * 100 
-              : 50} 
-            className="w-24 h-2" 
-          />
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-2"
+            onClick={toggleAITutor}
+          >
+            <MessageCircle size={16} />
+            Tutor IA
+          </Button>
+          
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Progreso de la lección</span>
+            <Progress 
+              value={activeTab === 'practice' 
+                ? ((currentQuestionIndex + 1) / content.practice.length) * 100 
+                : 50} 
+              className="w-24 h-2" 
+            />
+          </div>
         </div>
       </div>
+      
+      {showAITutor && (
+        <AITutor 
+          lessonTitle={content.title} 
+          lessonContent={content.content}
+          onClose={() => setShowAITutor(false)}
+        />
+      )}
       
       <div className="glass-card overflow-hidden">
         <div className="border-b">
