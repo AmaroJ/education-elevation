@@ -1,3 +1,4 @@
+
 export interface Topic {
   id: string;
   title: string;
@@ -80,6 +81,27 @@ export const modules: Module[] = [
         description: 'Temas y frases para conversaciones informales',
         duration: '10 min',
         completed: false
+      },
+      {
+        id: 'phone-conversations',
+        title: 'Conversaciones Telefónicas',
+        description: 'Cómo hablar por teléfono en inglés',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'ordering-food',
+        title: 'Pedir en Restaurantes',
+        description: 'Vocabulario y frases para pedir comida',
+        duration: '12 min',
+        completed: false
+      },
+      {
+        id: 'shopping-phrases',
+        title: 'De Compras',
+        description: 'Expresiones útiles para ir de compras',
+        duration: '10 min',
+        completed: false
       }
     ],
     progress: 0
@@ -131,6 +153,34 @@ export const modules: Module[] = [
         title: 'Condicionales',
         description: 'Los tres tipos principales de condicionales',
         duration: '22 min',
+        completed: false
+      },
+      {
+        id: 'passive-voice',
+        title: 'Voz Pasiva',
+        description: 'Construcción y uso de la voz pasiva',
+        duration: '18 min',
+        completed: false
+      },
+      {
+        id: 'reported-speech',
+        title: 'Estilo Indirecto',
+        description: 'Cómo reportar lo que otros han dicho',
+        duration: '20 min',
+        completed: false
+      },
+      {
+        id: 'articles',
+        title: 'Artículos',
+        description: 'Uso correcto de a, an y the',
+        duration: '12 min',
+        completed: false
+      },
+      {
+        id: 'prepositions',
+        title: 'Preposiciones',
+        description: 'Preposiciones de tiempo, lugar y movimiento',
+        duration: '15 min',
         completed: false
       }
     ],
@@ -191,6 +241,34 @@ export const modules: Module[] = [
         description: 'Vocabulario ecológico y de la naturaleza',
         duration: '10 min',
         completed: false
+      },
+      {
+        id: 'education',
+        title: 'Educación',
+        description: 'Términos relacionados con estudios y formación',
+        duration: '14 min',
+        completed: false
+      },
+      {
+        id: 'sports-hobbies',
+        title: 'Deportes y Pasatiempos',
+        description: 'Vocabulario deportivo y de actividades recreativas',
+        duration: '12 min',
+        completed: false
+      },
+      {
+        id: 'family-relationships',
+        title: 'Familia y Relaciones',
+        description: 'Términos de parentesco y relaciones personales',
+        duration: '10 min',
+        completed: false
+      },
+      {
+        id: 'clothing-fashion',
+        title: 'Ropa y Moda',
+        description: 'Vocabulario de vestimenta y tendencias',
+        duration: '10 min',
+        completed: false
       }
     ],
     progress: 0
@@ -242,6 +320,27 @@ export const modules: Module[] = [
         title: 'Reducción y Contracciones',
         description: 'Reducir sonidos como los nativos',
         duration: '12 min',
+        completed: false
+      },
+      {
+        id: 'intonation-patterns',
+        title: 'Patrones de Entonación',
+        description: 'Entender y practicar diferentes patrones de entonación',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'difficult-sounds',
+        title: 'Sonidos Problemáticos',
+        description: 'Sonidos especialmente difíciles para hispanohablantes',
+        duration: '18 min',
+        completed: false
+      },
+      {
+        id: 'accent-reduction',
+        title: 'Reducción de Acento',
+        description: 'Técnicas para neutralizar el acento extranjero',
+        duration: '20 min',
         completed: false
       }
     ],
@@ -302,6 +401,27 @@ export const modules: Module[] = [
         description: 'Comunicación efectiva en reuniones virtuales',
         duration: '15 min',
         completed: false
+      },
+      {
+        id: 'business-etiquette',
+        title: 'Etiqueta Empresarial',
+        description: 'Normas de comportamiento en entornos profesionales',
+        duration: '16 min',
+        completed: false
+      },
+      {
+        id: 'customer-service',
+        title: 'Atención al Cliente',
+        description: 'Frases y técnicas para el servicio al cliente',
+        duration: '18 min',
+        completed: false
+      },
+      {
+        id: 'marketing-sales',
+        title: 'Marketing y Ventas',
+        description: 'Vocabulario especializado para marketing y ventas',
+        duration: '20 min',
+        completed: false
       }
     ],
     progress: 0
@@ -353,6 +473,34 @@ export const modules: Module[] = [
         title: 'Tabúes y Etiqueta',
         description: 'Qué hacer y no hacer en entornos anglófonos',
         duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'festive-celebrations',
+        title: 'Festividades y Celebraciones',
+        description: 'Tradiciones festivas en países angloparlantes',
+        duration: '14 min',
+        completed: false
+      },
+      {
+        id: 'education-systems',
+        title: 'Sistemas Educativos',
+        description: 'Diferencias en educación entre países',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'food-customs',
+        title: 'Costumbres Gastronómicas',
+        description: 'Tradiciones culinarias en culturas anglosajonas',
+        duration: '12 min',
+        completed: false
+      },
+      {
+        id: 'business-culture',
+        title: 'Cultura Empresarial',
+        description: 'Entornos de trabajo en países de habla inglesa',
+        duration: '18 min',
         completed: false
       }
     ],

@@ -1,9 +1,10 @@
 
-import { useState, useRef } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2, Play, Pause, Volume, VolumeX } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2, Play, Pause, Volume, VolumeX, Mic, Headphones, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type LessonContent as LessonContentType } from '@/lib/data';
 import { toast } from '@/components/ui/use-toast';
 
@@ -16,12 +17,53 @@ interface LessonContentProps {
 const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('content');
+  const [activeMode, setActiveMode] = useState('read');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>(Array(content.practice.length).fill(''));
   const [isCompleted, setIsCompleted] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [spokenText, setSpokenText] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
+  
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.addEventListener('play', () => setIsVideoPlaying(true));
+      videoRef.current.addEventListener('pause', () => setIsVideoPlaying(false));
+      videoRef.current.addEventListener('ended', () => setIsVideoPlaying(false));
+    }
+    
+    // Initialize speech recognition if supported
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      speechRecognitionRef.current = new SpeechRecognition();
+      speechRecognitionRef.current.continuous = false;
+      speechRecognitionRef.current.interimResults = true;
+      speechRecognitionRef.current.lang = 'en-US';
+      
+      speechRecognitionRef.current.onresult = (event) => {
+        const current = event.resultIndex;
+        const transcript = event.results[current][0].transcript;
+        setTranscript(transcript);
+      };
+      
+      speechRecognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+    
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.removeEventListener('play', () => setIsVideoPlaying(true));
+        videoRef.current.removeEventListener('pause', () => setIsVideoPlaying(false));
+        videoRef.current.removeEventListener('ended', () => setIsVideoPlaying(false));
+      }
+    };
+  }, []);
   
   const handleBack = () => {
     navigate(`/module/${moduleId}`);
@@ -33,6 +75,19 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
     if (tab !== 'content' && videoRef.current && !videoRef.current.paused) {
       videoRef.current.pause();
       setIsVideoPlaying(false);
+    }
+  };
+  
+  const handleModeChange = (mode: string) => {
+    setActiveMode(mode);
+    
+    // Stop any ongoing activities when changing modes
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    if (isListening && speechRecognitionRef.current) {
+      speechRecognitionRef.current.stop();
+      setIsListening(false);
     }
   };
   
@@ -79,9 +134,15 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
       if (isVideoPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch(error => {
+          console.error("Error playing video:", error);
+          toast({
+            title: "Error",
+            description: "No se pudo reproducir el video. Inténtalo nuevamente.",
+            variant: "destructive"
+          });
+        });
       }
-      setIsVideoPlaying(!isVideoPlaying);
     }
   };
 
@@ -90,6 +151,52 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(!isMuted);
     }
+  };
+  
+  const handlePlayAudio = (text: string) => {
+    // Use the Web Speech API for text-to-speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    speechSynthesis.speak(utterance);
+    
+    toast({
+      title: "Reproduciendo audio",
+      description: "Escucha atentamente la pronunciación."
+    });
+  };
+  
+  const handleSpeechRecognition = () => {
+    if (!speechRecognitionRef.current) {
+      toast({
+        title: "No disponible",
+        description: "Tu navegador no soporta reconocimiento de voz.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (isListening) {
+      speechRecognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setTranscript('');
+      speechRecognitionRef.current.start();
+      setIsListening(true);
+      
+      toast({
+        title: "Escuchando...",
+        description: "Habla claramente en inglés."
+      });
+    }
+  };
+  
+  const handleRepeatPhrase = (phrase: string) => {
+    setSpokenText(phrase);
+    handlePlayAudio(phrase);
+    
+    setTimeout(() => {
+      handleSpeechRecognition();
+    }, 2000);
   };
   
   const currentQuestion = content.practice[currentQuestionIndex];
@@ -149,64 +256,232 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
             <div className="max-w-3xl mx-auto">
               <h1 className="text-2xl font-semibold mb-6">{content.title}</h1>
               
-              {content.videoUrl && (
-                <div className="mb-6 rounded-xl overflow-hidden relative">
-                  <div className="aspect-w-16 aspect-h-9 bg-black">
-                    <video 
-                      ref={videoRef}
-                      src={content.videoUrl}
-                      className="w-full h-full object-contain"
-                      poster={content.videoPoster || ""}
-                      onEnded={() => setIsVideoPlaying(false)}
+              <div className="mb-6">
+                <Tabs value={activeMode} onValueChange={handleModeChange} className="w-full">
+                  <TabsList className="grid grid-cols-4 mb-6">
+                    <TabsTrigger value="read" className="flex gap-2 items-center">
+                      <BookOpen size={16} />
+                      <span className="hidden sm:inline">Leer</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="listen" className="flex gap-2 items-center">
+                      <Headphones size={16} />
+                      <span className="hidden sm:inline">Escuchar</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="pronounce" className="flex gap-2 items-center">
+                      <Volume2 size={16} />
+                      <span className="hidden sm:inline">Pronunciar</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="speak" className="flex gap-2 items-center">
+                      <Mic size={16} />
+                      <span className="hidden sm:inline">Hablar</span>
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="read">
+                    {content.videoUrl && (
+                      <div className="mb-6 rounded-xl overflow-hidden relative">
+                        <div className="aspect-w-16 aspect-h-9 bg-black">
+                          <video 
+                            ref={videoRef}
+                            src={content.videoUrl}
+                            className="w-full h-full object-contain"
+                            poster={content.videoPoster || ""}
+                            onEnded={() => setIsVideoPlaying(false)}
+                            controls={false}
+                          />
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-white hover:bg-white/20" 
+                              onClick={handleTogglePlay}
+                            >
+                              {isVideoPlaying ? <Pause size={20} /> : <Play size={20} />}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-white hover:bg-white/20" 
+                              onClick={handleToggleMute}
+                            >
+                              {isMuted ? <VolumeX size={20} /> : <Volume size={20} />}
+                            </Button>
+                          </div>
+                          <div className="text-white text-sm">{content.videoCaption || "Material visual de apoyo"}</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div 
+                      className="prose prose-slate max-w-none"
+                      dangerouslySetInnerHTML={{ __html: content.content }}
                     />
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-white hover:bg-white/20" 
-                        onClick={handleTogglePlay}
-                      >
-                        {isVideoPlaying ? <Pause size={20} /> : <Play size={20} />}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-white hover:bg-white/20" 
-                        onClick={handleToggleMute}
-                      >
-                        {isMuted ? <VolumeX size={20} /> : <Volume size={20} />}
-                      </Button>
-                    </div>
-                    <div className="text-white text-sm">{content.videoCaption || "Material visual de apoyo"}</div>
-                  </div>
-                </div>
-              )}
-              
-              <div 
-                className="prose prose-slate max-w-none"
-                dangerouslySetInnerHTML={{ __html: content.content }}
-              />
-              
-              <div className="mt-8 bg-secondary/50 rounded-xl p-6">
-                <h3 className="text-lg font-medium mb-4">Ejemplos prácticos</h3>
-                <div className="space-y-4">
-                  {content.examples.map((example, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium shrink-0 mt-0.5">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-secondary-foreground">{example}</p>
-                        <button className="flex items-center gap-1 text-primary/80 hover:text-primary text-sm mt-1">
-                          <Volume2 size={14} />
-                          Escuchar pronunciación
-                        </button>
+                    
+                    <div className="mt-8 bg-secondary/50 rounded-xl p-6">
+                      <h3 className="text-lg font-medium mb-4">Ejemplos prácticos</h3>
+                      <div className="space-y-4">
+                        {content.examples.map((example, index) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium shrink-0 mt-0.5">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-secondary-foreground">{example}</p>
+                              <button 
+                                className="flex items-center gap-1 text-primary/80 hover:text-primary text-sm mt-1"
+                                onClick={() => handlePlayAudio(example)}
+                              >
+                                <Volume2 size={14} />
+                                Escuchar pronunciación
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="listen">
+                    <div className="space-y-6">
+                      <div className="p-6 bg-secondary/30 rounded-xl">
+                        <h3 className="text-lg font-medium mb-4">Ejercicios de escucha</h3>
+                        <p className="mb-4">Escucha cada ejemplo y trata de entender lo que se dice:</p>
+                        
+                        <div className="space-y-6">
+                          {content.examples.map((example, index) => (
+                            <div key={index} className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm">
+                              <div className="flex justify-between items-center mb-3">
+                                <span className="font-medium">Ejemplo {index + 1}</span>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="flex items-center gap-1"
+                                  onClick={() => handlePlayAudio(example)}
+                                >
+                                  <Volume2 size={14} />
+                                  Escuchar
+                                </Button>
+                              </div>
+                              <div className="h-12 flex items-center justify-center">
+                                <p className="text-muted-foreground italic text-center">
+                                  Haz clic en "Escuchar" y presta atención
+                                </p>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                className="w-full text-primary mt-3"
+                                onClick={() => setSpokenText(example)}
+                              >
+                                Mostrar texto
+                              </Button>
+                              
+                              {spokenText === example && (
+                                <div className="mt-3 p-2 bg-primary/5 border border-primary/20 rounded">
+                                  {example}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="pronounce">
+                    <div className="space-y-6">
+                      <div className="p-6 bg-secondary/30 rounded-xl">
+                        <h3 className="text-lg font-medium mb-4">Ejercicios de pronunciación</h3>
+                        <p className="mb-4">Escucha cada ejemplo y luego intenta repetirlo con la mejor pronunciación posible:</p>
+                        
+                        <div className="space-y-6">
+                          {content.examples.map((example, index) => (
+                            <div key={index} className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm">
+                              <div className="flex justify-between items-center mb-3">
+                                <span className="font-medium">Ejemplo {index + 1}</span>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="flex items-center gap-1"
+                                    onClick={() => handlePlayAudio(example)}
+                                  >
+                                    <Volume2 size={14} />
+                                    Escuchar
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className={`flex items-center gap-1 ${isListening ? 'bg-red-100 text-red-600 border-red-300' : ''}`}
+                                    onClick={handleSpeechRecognition}
+                                  >
+                                    <Mic size={14} />
+                                    {isListening ? 'Detener' : 'Grabar'}
+                                  </Button>
+                                </div>
+                              </div>
+                              <p className="mb-3">{example}</p>
+                              
+                              {transcript && (
+                                <div className="mt-3">
+                                  <h4 className="text-sm font-medium mb-1">Tu pronunciación:</h4>
+                                  <div className="p-2 bg-primary/5 border border-primary/20 rounded">
+                                    {transcript}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="speak">
+                    <div className="space-y-6">
+                      <div className="p-6 bg-secondary/30 rounded-xl">
+                        <h3 className="text-lg font-medium mb-4">Ejercicios de conversación</h3>
+                        <p className="mb-4">Practica tu expresión oral repitiendo estas frases:</p>
+                        
+                        <div className="space-y-6">
+                          {content.examples.map((example, index) => (
+                            <div key={index} className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm">
+                              <div className="flex justify-between items-center mb-3">
+                                <span className="font-medium">Frase {index + 1}</span>
+                                <Button 
+                                  variant="primary" 
+                                  size="sm" 
+                                  className="flex items-center gap-1"
+                                  onClick={() => handleRepeatPhrase(example)}
+                                >
+                                  <Mic size={14} />
+                                  Repetir frase
+                                </Button>
+                              </div>
+                              <p className="mb-3">{example}</p>
+                              
+                              {isListening && spokenText === example && (
+                                <div className="text-center p-3 rounded bg-yellow-50 border border-yellow-200">
+                                  <p className="text-yellow-600 animate-pulse">Escuchando... Habla claramente.</p>
+                                </div>
+                              )}
+                              
+                              {transcript && spokenText === example && !isListening && (
+                                <div className="mt-3">
+                                  <h4 className="text-sm font-medium mb-1">Tu respuesta:</h4>
+                                  <div className="p-2 bg-primary/5 border border-primary/20 rounded">
+                                    {transcript}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
               
               <div className="mt-8 flex justify-end">

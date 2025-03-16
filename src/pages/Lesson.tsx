@@ -50,10 +50,28 @@ const Lesson = () => {
       return;
     }
     
+    // Check if browser supports the Web Speech API
+    const speechSynthesisSupported = 'speechSynthesis' in window;
+    const speechRecognitionSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    
+    if (!speechSynthesisSupported || !speechRecognitionSupported) {
+      toast({
+        title: "Funcionalidad limitada",
+        description: "Algunas funciones de audio pueden no estar disponibles en tu navegador.",
+      });
+    }
+    
     // Get lesson content
     const content = getLessonContent(topicId);
     setLessonContent(content);
     setIsLoading(false);
+    
+    // Preload video if it exists
+    if (content.videoUrl) {
+      const video = new Audio();
+      video.src = content.videoUrl;
+      video.preload = 'metadata';
+    }
   }, [moduleId, topicId, navigate]);
   
   if (isLoading) {

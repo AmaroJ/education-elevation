@@ -28,6 +28,26 @@ const Module = () => {
       return;
     }
     
+    // Check if browser supports the Web Speech API
+    const speechSynthesisSupported = 'speechSynthesis' in window;
+    const speechRecognitionSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    
+    if (!speechSynthesisSupported) {
+      toast({
+        title: "Funcionalidad limitada",
+        description: "Tu navegador no soporta la síntesis de voz. No podrás usar la función de escucha.",
+        variant: "destructive"
+      });
+    }
+    
+    if (!speechRecognitionSupported) {
+      toast({
+        title: "Funcionalidad limitada",
+        description: "Tu navegador no soporta el reconocimiento de voz. No podrás usar las funciones de pronunciación y habla.",
+        variant: "destructive"
+      });
+    }
+    
     setModule(foundModule);
     setIsLoading(false);
   }, [moduleId, navigate]);
