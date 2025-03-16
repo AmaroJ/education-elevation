@@ -65,35 +65,43 @@ const Lesson = () => {
     // Get lesson content
     const content = getLessonContent(topicId);
     setLessonContent(content);
-    setIsLoading(false);
     
     // Preload video if it exists
     if (content.videoUrl) {
       try {
-        const videoElement = document.createElement('video');
-        videoElement.src = content.videoUrl;
-        videoElement.preload = 'metadata';
+        // Use a more lightweight approach to check if video exists
+        const request = new Request(content.videoUrl, { method: 'HEAD' });
         
-        // Test if video can be played
-        videoElement.load();
-        
-        // Add a listener to check if the video can be played
-        videoElement.addEventListener('canplay', () => {
-          console.log('Video can be played:', content.videoUrl);
-        });
-        
-        // Add a listener to check for errors
-        videoElement.addEventListener('error', (e) => {
-          console.error('Error preloading video:', e);
-          toast({
-            title: "Error con el video",
-            description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
-            variant: "destructive"
+        fetch(request)
+          .then(response => {
+            if (response.ok) {
+              console.log('Video URL is valid:', content.videoUrl);
+            } else {
+              console.error('Video URL returned status:', response.status);
+              toast({
+                title: "Error con el video",
+                description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
+                variant: "destructive"
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error checking video URL:', error);
+            toast({
+              title: "Error con el video",
+              description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
+              variant: "destructive"
+            });
+          })
+          .finally(() => {
+            setIsLoading(false);
           });
-        });
       } catch (error) {
         console.error('Error with video preloading:', error);
+        setIsLoading(false);
       }
+    } else {
+      setIsLoading(false);
     }
   }, [moduleId, topicId, navigate]);
   

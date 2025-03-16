@@ -1,4 +1,3 @@
-
 export interface Topic {
   id: string;
   title: string;
@@ -101,6 +100,34 @@ export const modules: Module[] = [
         title: 'De Compras',
         description: 'Expresiones útiles para ir de compras',
         duration: '10 min',
+        completed: false
+      },
+      {
+        id: 'weather-talk',
+        title: 'Hablar del Clima',
+        description: 'Expresiones para hablar sobre el tiempo',
+        duration: '10 min',
+        completed: false
+      },
+      {
+        id: 'making-plans',
+        title: 'Hacer Planes',
+        description: 'Cómo organizar actividades sociales en inglés',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'asking-directions',
+        title: 'Pedir Indicaciones',
+        description: 'Cómo preguntar y entender direcciones',
+        duration: '12 min',
+        completed: false
+      },
+      {
+        id: 'travel-basics',
+        title: 'Inglés para Viajes',
+        description: 'Frases esenciales para viajeros',
+        duration: '15 min',
         completed: false
       }
     ],
@@ -342,6 +369,27 @@ export const modules: Module[] = [
         description: 'Técnicas para neutralizar el acento extranjero',
         duration: '20 min',
         completed: false
+      },
+      {
+        id: 'pronunciation-practice',
+        title: 'Práctica Intensiva',
+        description: 'Ejercicios avanzados de pronunciación',
+        duration: '20 min',
+        completed: false
+      },
+      {
+        id: 'shadowing',
+        title: 'Técnica de Shadowing',
+        description: 'Repitiendo en tiempo real para mejorar la fluidez',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'minimal-pairs',
+        title: 'Pares Mínimos',
+        description: 'Distinguir sonidos similares en inglés',
+        duration: '15 min',
+        completed: false
       }
     ],
     progress: 0
@@ -505,6 +553,72 @@ export const modules: Module[] = [
       }
     ],
     progress: 0
+  },
+  {
+    id: 'writing-skills',
+    title: 'Habilidades de Escritura',
+    description: 'Mejora tu escritura en inglés con ejercicios prácticos y explicaciones claras.',
+    image: '/writing.svg',
+    level: 'Intermediate',
+    topics: [
+      {
+        id: 'basic-punctuation',
+        title: 'Puntuación Básica',
+        description: 'Reglas de puntuación en inglés',
+        duration: '12 min',
+        completed: false
+      },
+      {
+        id: 'sentence-structure',
+        title: 'Estructura de Oraciones',
+        description: 'Construir oraciones coherentes y efectivas',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'paragraph-writing',
+        title: 'Escritura de Párrafos',
+        description: 'Organización y coherencia en párrafos',
+        duration: '18 min',
+        completed: false
+      },
+      {
+        id: 'email-writing',
+        title: 'Escribir Emails',
+        description: 'Estructura y frases útiles para emails',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'creative-writing',
+        title: 'Escritura Creativa',
+        description: 'Expresar ideas con estilo y creatividad',
+        duration: '20 min',
+        completed: false
+      },
+      {
+        id: 'formal-letters',
+        title: 'Cartas Formales',
+        description: 'Estructura y lenguaje para cartas formales',
+        duration: '15 min',
+        completed: false
+      },
+      {
+        id: 'essay-writing',
+        title: 'Redacción de Ensayos',
+        description: 'Planificación y estructura de ensayos',
+        duration: '22 min',
+        completed: false
+      },
+      {
+        id: 'summarizing',
+        title: 'Resúmenes',
+        description: 'Técnicas para resumir textos',
+        duration: '15 min',
+        completed: false
+      }
+    ],
+    progress: 0
   }
 ];
 
@@ -595,6 +709,86 @@ export function getLessonContent(topicId: string): LessonContent {
         videoUrl: "https://storage.googleapis.com/my-english-videos/greetings-intro.mp4",
         videoPoster: "https://storage.googleapis.com/my-english-videos/greetings-poster.jpg",
         videoCaption: "Aprende los saludos básicos en inglés"
+      };
+    case 'introductions':
+      return {
+        title: 'Conversaciones iniciales en inglés',
+        content: `
+          <p>Iniciar una conversación en inglés puede ser intimidante al principio, pero con algunas frases clave y un poco de práctica, pronto te sentirás cómodo/a entablando conversaciones con hablantes nativos.</p>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Cómo iniciar una conversación</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Excuse me...</strong> - Disculpe... (para iniciar una conversación con un desconocido)</li>
+            <li><strong>Do you mind if I join you?</strong> - ¿Te importa si me uno a ti?</li>
+            <li><strong>I couldn't help noticing...</strong> - No pude evitar notar... (para comentar algo que has observado)</li>
+            <li><strong>Lovely weather today, isn't it?</strong> - Hace un tiempo estupendo hoy, ¿verdad? (hablar del clima es siempre un buen inicio)</li>
+            <li><strong>Have you been waiting long?</strong> - ¿Llevas esperando mucho tiempo?</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Preguntas para conocer a alguien</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Where are you from?</strong> - ¿De dónde eres?</li>
+            <li><strong>What do you do?</strong> - ¿A qué te dedicas?</li>
+            <li><strong>How long have you been living here?</strong> - ¿Cuánto tiempo llevas viviendo aquí?</li>
+            <li><strong>What are your hobbies?</strong> - ¿Cuáles son tus pasatiempos?</li>
+            <li><strong>Do you have any siblings?</strong> - ¿Tienes hermanos?</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Mantener la conversación</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Really? That's interesting!</strong> - ¿En serio? ¡Eso es interesante!</li>
+            <li><strong>Tell me more about that.</strong> - Cuéntame más sobre eso.</li>
+            <li><strong>I know what you mean.</strong> - Sé a qué te refieres.</li>
+            <li><strong>That's a good point.</strong> - Es un buen punto.</li>
+            <li><strong>I've never thought about it that way.</strong> - Nunca lo había pensado de esa manera.</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Terminar educadamente</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>It was nice talking to you.</strong> - Fue agradable hablar contigo.</li>
+            <li><strong>I should get going.</strong> - Debería irme.</li>
+            <li><strong>I've got to run.</strong> - Tengo que irme corriendo.</li>
+            <li><strong>Let's catch up again soon.</strong> - Hablemos de nuevo pronto.</li>
+            <li><strong>Take care!</strong> - ¡Cuídate!</li>
+          </ul>
+        `,
+        examples: [
+          "Excuse me, is this seat taken?",
+          "I'm from Spain. Where are you from?",
+          "What do you do for a living?",
+          "That sounds really interesting! Tell me more.",
+          "It was great meeting you. Let's stay in touch!"
+        ],
+        practice: [
+          {
+            question: "¿Cómo iniciarías una conversación con un desconocido?",
+            options: ["Hey you!", "Excuse me, may I ask you something?", "Talk to me now.", "I need information."],
+            correctAnswer: "Excuse me, may I ask you something?"
+          },
+          {
+            question: "¿Qué preguntarías para saber la profesión de alguien?",
+            options: ["How much money do you make?", "Is your job good?", "What do you do for a living?", "Are you rich?"],
+            correctAnswer: "What do you do for a living?"
+          },
+          {
+            question: "¿Cómo mostrarías interés en lo que dice la otra persona?",
+            options: ["That's boring.", "OK, whatever.", "That's really interesting, tell me more!", "I don't care."],
+            correctAnswer: "That's really interesting, tell me more!"
+          },
+          {
+            question: "¿Cómo te despedirías educadamente de alguien que acabas de conocer?",
+            options: ["Goodbye forever.", "It was nice meeting you.", "Finally this is over.", "See you never."],
+            correctAnswer: "It was nice meeting you."
+          },
+          {
+            question: "¿Qué dirías para mantener viva una conversación?",
+            options: ["Stop talking now.", "I know what you mean, and I've had a similar experience.", "Change the subject.", "Let's talk about me now."],
+            correctAnswer: "I know what you mean, and I've had a similar experience."
+          }
+        ],
+        videoUrl: "https://storage.googleapis.com/my-english-videos/introductions.mp4",
+        videoPoster: "https://storage.googleapis.com/my-english-videos/introductions-poster.jpg",
+        videoCaption: "Cómo iniciar y mantener conversaciones en inglés"
       };
     case 'daily-routines':
       return {
@@ -761,6 +955,86 @@ export function getLessonContent(topicId: string): LessonContent {
         videoUrl: "https://storage.googleapis.com/my-english-videos/restaurant-ordering.mp4",
         videoPoster: "https://storage.googleapis.com/my-english-videos/restaurant-poster.jpg",
         videoCaption: "Cómo pedir comida en un restaurante correctamente"
+      };
+    case 'writing-basics':
+      return {
+        title: 'Fundamentos de escritura en inglés',
+        content: `
+          <p>La escritura es una habilidad esencial para dominar cualquier idioma. Aprender a escribir correctamente en inglés te ayudará tanto en tu vida académica como profesional.</p>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Estructura básica de una oración</h2>
+          <p>Las oraciones en inglés generalmente siguen la estructura Sujeto + Verbo + Objeto (SVO):</p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>I (S) read (V) books (O).</strong> - Yo leo libros.</li>
+            <li><strong>She (S) loves (V) music (O).</strong> - Ella ama la música.</li>
+            <li><strong>They (S) play (V) soccer (O).</strong> - Ellos juegan al fútbol.</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Puntuación básica</h2>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Period (.)</strong> - Punto. Se usa al final de una oración declarativa.</li>
+            <li><strong>Question mark (?)</strong> - Signo de interrogación. Se usa al final de una pregunta.</li>
+            <li><strong>Exclamation mark (!)</strong> - Signo de exclamación. Expresa emoción o énfasis.</li>
+            <li><strong>Comma (,)</strong> - Coma. Separa elementos en una lista o partes de una oración.</li>
+            <li><strong>Apostrophe (')</strong> - Apóstrofo. Indica posesión o contracción.</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Uso de mayúsculas</h2>
+          <p>En inglés se utilizan las mayúsculas en:</p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li>La primera letra de una oración</li>
+            <li>Los nombres propios (personas, lugares, marcas)</li>
+            <li>El pronombre "I" (yo)</li>
+            <li>Títulos de obras (libros, películas, canciones)</li>
+            <li>Días de la semana y meses</li>
+            <li>Nacionalidades e idiomas</li>
+          </ul>
+          
+          <h2 class="text-xl font-medium mt-6 mb-3">Párrafos</h2>
+          <p>Un párrafo bien estructurado debe contener:</p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Topic sentence</strong> - Oración temática que introduce la idea principal</li>
+            <li><strong>Supporting sentences</strong> - Oraciones de apoyo que desarrollan la idea</li>
+            <li><strong>Concluding sentence</strong> - Oración final que resume o cierra el párrafo</li>
+          </ul>
+        `,
+        examples: [
+          "I enjoy learning English because it's an international language.",
+          "Have you ever visited London? It's a beautiful city.",
+          "First, add flour to the bowl. Then, mix in the eggs and sugar.",
+          "My sister's car is red, but my brother's car is blue.",
+          "The United States has fifty states, and Washington, D.C. is its capital."
+        ],
+        practice: [
+          {
+            question: "¿Cuál es la estructura básica de una oración en inglés?",
+            options: ["Verbo + Sujeto + Objeto", "Sujeto + Objeto + Verbo", "Sujeto + Verbo + Objeto", "Objeto + Sujeto + Verbo"],
+            correctAnswer: "Sujeto + Verbo + Objeto"
+          },
+          {
+            question: "¿Qué signo de puntuación se usa al final de una pregunta?",
+            options: ["Period (.)", "Comma (,)", "Exclamation mark (!)", "Question mark (?)"],
+            correctAnswer: "Question mark (?)"
+          },
+          {
+            question: "¿Cuál de las siguientes palabras debe escribirse siempre con mayúscula en inglés?",
+            options: ["car", "book", "monday", "apple"],
+            correctAnswer: "monday"
+          },
+          {
+            question: "¿Qué signo se utiliza para indicar posesión en inglés?",
+            options: ["Colon (:)", "Apostrophe (')", "Hyphen (-)", "Semicolon (;)"],
+            correctAnswer: "Apostrophe (')"
+          },
+          {
+            question: "¿Cuál es el primer elemento de un párrafo bien estructurado?",
+            options: ["Supporting sentence", "Topic sentence", "Concluding sentence", "Transition sentence"],
+            correctAnswer: "Topic sentence"
+          }
+        ],
+        videoUrl: "https://storage.googleapis.com/my-english-videos/writing-basics.mp4",
+        videoPoster: "https://storage.googleapis.com/my-english-videos/writing-poster.jpg",
+        videoCaption: "Fundamentos de escritura en inglés"
       };
     default:
       return {

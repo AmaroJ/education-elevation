@@ -1,5 +1,6 @@
+
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2, Play, Pause, Volume, VolumeX, Mic, Headphones, BookOpen, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Volume2, Play, Pause, Volume, VolumeX, Mic, Headphones, BookOpen, MessageCircle, Edit3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -27,6 +28,20 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const [isListening, setIsListening] = useState(false);
   const [spokenText, setSpokenText] = useState('');
   const [showAITutor, setShowAITutor] = useState(false);
+  const [activeAudioExample, setActiveAudioExample] = useState<number | null>(null);
+  const [listeningScores, setListeningScores] = useState<{correct: boolean, attempted: boolean}[]>(
+    content.examples.map(() => ({ correct: false, attempted: false }))
+  );
+  const [writtenAnswer, setWrittenAnswer] = useState('');
+  const [writingExercises] = useState([
+    { prompt: "Write the greeting for morning time:", answer: "Good morning" },
+    { prompt: "Write how to introduce yourself:", answer: "My name is..." },
+    { prompt: "Write how to ask someone's name:", answer: "What's your name?" },
+    { prompt: "Write how to say goodbye:", answer: "Goodbye" }
+  ]);
+  const [currentWritingIndex, setCurrentWritingIndex] = useState(0);
+  const [writingSubmitted, setWritingSubmitted] = useState(false);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
@@ -64,6 +79,9 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
         videoRef.current.removeEventListener('pause', () => setIsVideoPlaying(false));
         videoRef.current.removeEventListener('ended', () => setIsVideoPlaying(false));
       }
+      
+      // Stop any ongoing audio when component unmounts
+      speechSynthesis.cancel();
     };
   }, []);
   
@@ -78,6 +96,9 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
       videoRef.current.pause();
       setIsVideoPlaying(false);
     }
+    
+    // Stop any ongoing audio
+    speechSynthesis.cancel();
   };
   
   const handleModeChange = (mode: string) => {
@@ -91,6 +112,12 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
       speechRecognitionRef.current.stop();
       setIsListening(false);
     }
+    
+    // Stop any speech synthesis
+    speechSynthesis.cancel();
+    
+    // Reset audio example selection
+    setActiveAudioExample(null);
   };
   
   const handleAnswerSelect = (answer: string) => {
@@ -155,16 +182,21 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
     }
   };
   
-  const handlePlayAudio = (text: string) => {
+  const handlePlayAudio = (text: string, index: number) => {
+    // Stop any previous speech synthesis
+    speechSynthesis.cancel();
+    
+    // Set the active example
+    setActiveAudioExample(index);
+    
     // Use the Web Speech API for text-to-speech
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    speechSynthesis.speak(utterance);
+    utterance.onend = () => {
+      setActiveAudioExample(null);
+    };
     
-    toast({
-      title: "Reproduciendo audio",
-      description: "Escucha atentamente la pronunciación."
-    });
+    speechSynthesis.speak(utterance);
   };
   
   const handleSpeechRecognition = () => {
@@ -194,11 +226,72 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   
   const handleRepeatPhrase = (phrase: string) => {
     setSpokenText(phrase);
-    handlePlayAudio(phrase);
     
-    setTimeout(() => {
-      handleSpeechRecognition();
-    }, 2000);
+    // First cancel any ongoing speech
+    speechSynthesis.cancel();
+    
+    // Then speak the new phrase
+    const utterance = new SpeechSynthesisUtterance(phrase);
+    utterance.lang = 'en-US';
+    utterance.onend = () => {
+      setTimeout(() => {
+        handleSpeechRecognition();
+      }, 1000);
+    };
+    
+    speechSynthesis.speak(utterance);
+  };
+  
+  const checkListeningAnswer = (index: number, userAnswer: string) => {
+    const correctAnswer = content.examples[index];
+    // Case-insensitive comparison and ignore punctuation
+    const normalizedUserAnswer = userAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
+    const normalizedCorrectAnswer = correctAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
+    
+    const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+    
+    const newScores = [...listeningScores];
+    newScores[index] = { correct: isCorrect, attempted: true };
+    setListeningScores(newScores);
+    
+    toast({
+      title: isCorrect ? "¡Correcto!" : "Incorrecto",
+      description: isCorrect 
+        ? "Has escrito correctamente lo que escuchaste." 
+        : `La respuesta correcta era: "${correctAnswer}"`,
+      variant: isCorrect ? "default" : "destructive"
+    });
+  };
+  
+  const handleWritingNext = () => {
+    if (currentWritingIndex < writingExercises.length - 1) {
+      setCurrentWritingIndex(currentWritingIndex + 1);
+      setWrittenAnswer('');
+      setWritingSubmitted(false);
+    } else {
+      toast({
+        title: "¡Ejercicios de escritura completados!",
+        description: "Has terminado todos los ejercicios de escritura.",
+      });
+    }
+  };
+  
+  const checkWritingAnswer = () => {
+    const exercise = writingExercises[currentWritingIndex];
+    const correctAnswer = exercise.answer.toLowerCase();
+    const userAnswer = writtenAnswer.toLowerCase();
+    
+    const isCorrect = userAnswer.includes(correctAnswer) || correctAnswer.includes(userAnswer);
+    
+    setWritingSubmitted(true);
+    
+    toast({
+      title: isCorrect ? "¡Correcto!" : "Necesita mejorar",
+      description: isCorrect 
+        ? "Tu respuesta es correcta." 
+        : `Una respuesta correcta sería: "${exercise.answer}"`,
+      variant: isCorrect ? "default" : "destructive"
+    });
   };
   
   const toggleAITutor = () => {
@@ -284,7 +377,7 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
               
               <div className="mb-6">
                 <Tabs value={activeMode} onValueChange={handleModeChange} className="w-full">
-                  <TabsList className="grid grid-cols-4 mb-6">
+                  <TabsList className="grid grid-cols-5 mb-6">
                     <TabsTrigger value="read" className="flex gap-2 items-center">
                       <BookOpen size={16} />
                       <span className="hidden sm:inline">Leer</span>
@@ -300,6 +393,10 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
                     <TabsTrigger value="speak" className="flex gap-2 items-center">
                       <Mic size={16} />
                       <span className="hidden sm:inline">Hablar</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="write" className="flex gap-2 items-center">
+                      <Edit3 size={16} />
+                      <span className="hidden sm:inline">Escribir</span>
                     </TabsTrigger>
                   </TabsList>
                   
@@ -357,7 +454,7 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
                               <p className="text-secondary-foreground">{example}</p>
                               <button 
                                 className="flex items-center gap-1 text-primary/80 hover:text-primary text-sm mt-1"
-                                onClick={() => handlePlayAudio(example)}
+                                onClick={() => handlePlayAudio(example, index)}
                               >
                                 <Volume2 size={14} />
                                 Escuchar pronunciación
@@ -373,7 +470,7 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
                     <div className="space-y-6">
                       <div className="p-6 bg-secondary/30 rounded-xl">
                         <h3 className="text-lg font-medium mb-4">Ejercicios de escucha</h3>
-                        <p className="mb-4">Escucha cada ejemplo y trata de entender lo que se dice:</p>
+                        <p className="mb-4">Escucha cada ejemplo y escribe lo que oyes:</p>
                         
                         <div className="space-y-6">
                           {content.examples.map((example, index) => (
@@ -383,29 +480,41 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  className="flex items-center gap-1"
-                                  onClick={() => handlePlayAudio(example)}
+                                  className={`flex items-center gap-1 ${activeAudioExample === index ? 'bg-primary/20' : ''}`}
+                                  onClick={() => handlePlayAudio(example, index)}
+                                  disabled={activeAudioExample !== null && activeAudioExample !== index}
                                 >
                                   <Volume2 size={14} />
-                                  Escuchar
+                                  {activeAudioExample === index ? 'Reproduciendo...' : 'Escuchar'}
                                 </Button>
                               </div>
-                              <div className="h-12 flex items-center justify-center">
-                                <p className="text-muted-foreground italic text-center">
-                                  Haz clic en "Escuchar" y presta atención
-                                </p>
-                              </div>
-                              <Button 
-                                variant="ghost" 
-                                className="w-full text-primary mt-3"
-                                onClick={() => setSpokenText(example)}
-                              >
-                                Mostrar texto
-                              </Button>
                               
-                              {spokenText === example && (
-                                <div className="mt-3 p-2 bg-primary/5 border border-primary/20 rounded">
-                                  {example}
+                              <div className="mt-4">
+                                <label className="block text-sm font-medium mb-1">Escribe lo que oyes:</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    className="flex-1 p-2 border rounded-md"
+                                    placeholder="Escribe aquí..."
+                                    value={spokenText === example ? example : ''}
+                                    onChange={(e) => setSpokenText(e.target.value)}
+                                    disabled={listeningScores[index].attempted}
+                                  />
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => checkListeningAnswer(index, spokenText)}
+                                    disabled={listeningScores[index].attempted || !spokenText}
+                                  >
+                                    Verificar
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              {listeningScores[index].attempted && (
+                                <div className={`mt-3 p-2 rounded ${listeningScores[index].correct ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                  {listeningScores[index].correct 
+                                    ? "¡Correcto! Has escrito correctamente lo que escuchaste."
+                                    : `Incorrecto. La respuesta correcta era: "${example}"`}
                                 </div>
                               )}
                             </div>
@@ -431,10 +540,11 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
                                     variant="outline" 
                                     size="sm" 
                                     className="flex items-center gap-1"
-                                    onClick={() => handlePlayAudio(example)}
+                                    onClick={() => handlePlayAudio(example, index)}
+                                    disabled={activeAudioExample !== null && activeAudioExample !== index}
                                   >
                                     <Volume2 size={14} />
-                                    Escuchar
+                                    {activeAudioExample === index ? 'Reproduciendo...' : 'Escuchar'}
                                   </Button>
                                   <Button 
                                     variant="outline" 
@@ -476,7 +586,7 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
                               <div className="flex justify-between items-center mb-3">
                                 <span className="font-medium">Frase {index + 1}</span>
                                 <Button 
-                                  variant="primary" 
+                                  variant="secondary" 
                                   size="sm" 
                                   className="flex items-center gap-1"
                                   onClick={() => handleRepeatPhrase(example)}
@@ -503,6 +613,54 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
                               )}
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="write">
+                    <div className="space-y-6">
+                      <div className="p-6 bg-secondary/30 rounded-xl">
+                        <h3 className="text-lg font-medium mb-4">Ejercicios de escritura</h3>
+                        <p className="mb-4">Practica tu escritura completando los siguientes ejercicios:</p>
+                        
+                        <div className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm">
+                          <div className="mb-4">
+                            <h4 className="font-medium mb-2">Ejercicio {currentWritingIndex + 1} de {writingExercises.length}</h4>
+                            <p className="mb-3">{writingExercises[currentWritingIndex].prompt}</p>
+                            
+                            <textarea
+                              className="w-full p-3 border rounded-md min-h-[100px]"
+                              placeholder="Escribe tu respuesta aquí..."
+                              value={writtenAnswer}
+                              onChange={(e) => setWrittenAnswer(e.target.value)}
+                              disabled={writingSubmitted}
+                            />
+                          </div>
+                          
+                          {writingSubmitted ? (
+                            <div className="flex justify-between">
+                              <div className="p-3 rounded bg-secondary">
+                                <p className="font-medium">Respuesta sugerida:</p>
+                                <p>{writingExercises[currentWritingIndex].answer}</p>
+                              </div>
+                              
+                              <Button
+                                variant="secondary"
+                                onClick={handleWritingNext}
+                              >
+                                {currentWritingIndex < writingExercises.length - 1 ? 'Siguiente ejercicio' : 'Finalizar'}
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="secondary"
+                              onClick={checkWritingAnswer}
+                              disabled={!writtenAnswer.trim()}
+                            >
+                              Verificar respuesta
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
