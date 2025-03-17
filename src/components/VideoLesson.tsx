@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Play, Pause, Volume2, VolumeX, Maximize, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, SkipBack, SkipForward, RefreshCw } from 'lucide-react';
 
 interface VideoLessonProps {
   videoUrl: string;
@@ -20,15 +20,46 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Public URLs for common example videos
+  const publicVideos = [
+    "https://www.w3schools.com/html/mov_bbb.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+  ];
+
+  // Try to load backup video if original fails
+  const handleLoadError = () => {
+    const currentVideo = videoRef.current?.src;
+    if (!currentVideo) return;
+    
+    // If this video URL is not from our backup list, try the first backup
+    if (!publicVideos.includes(currentVideo)) {
+      console.log("Loading backup video source");
+      
+      if (videoRef.current) {
+        videoRef.current.src = publicVideos[0];
+        videoRef.current.load();
+      }
+    }
+  };
+
   // Initialize video
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-
+    
+    // Reset error on new videoUrl
+    setError(null);
+    setIsLoading(true);
+    
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
       setIsLoading(false);
       console.log("Video metadata loaded successfully", { duration: video.duration });
+      
+      // Auto-play video when loaded
+      video.play().catch(err => {
+        console.log("Autoplay prevented by browser, user needs to interact:", err);
+      });
     };
 
     const handleTimeUpdate = () => {
@@ -37,6 +68,10 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
 
     const handleError = () => {
       console.error("Video loading error:", video.error);
+      
+      // Try different video URL format if possible (add backup logic)
+      handleLoadError();
+      
       setError('Error al cargar el video. Por favor, intenta de nuevo más tarde.');
       setIsLoading(false);
       toast({
@@ -52,10 +87,18 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
     
     // Add these additional event listeners for better debugging
     video.addEventListener('canplay', () => console.log("Video can play"));
-    video.addEventListener('playing', () => console.log("Video is playing"));
+    video.addEventListener('playing', () => {
+      console.log("Video is playing");
+      setIsPlaying(true);
+    });
     video.addEventListener('waiting', () => console.log("Video is waiting/buffering"));
+    video.addEventListener('pause', () => {
+      console.log("Video is paused");
+      setIsPlaying(false);
+    });
 
     // Try to load the video
+    video.src = videoUrl;
     video.load();
 
     return () => {
@@ -65,6 +108,7 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
       video.removeEventListener('canplay', () => {});
       video.removeEventListener('playing', () => {});
       video.removeEventListener('waiting', () => {});
+      video.removeEventListener('pause', () => {});
     };
   }, [toast, videoUrl]);
 
@@ -84,8 +128,6 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
         });
       });
     }
-
-    setIsPlaying(!isPlaying);
   };
 
   const toggleMute = () => {
@@ -127,6 +169,16 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
 
     video.currentTime = Math.min(video.duration, video.currentTime + 10);
   };
+  
+  const retryVideo = () => {
+    setError(null);
+    setIsLoading(true);
+    
+    if (videoRef.current) {
+      videoRef.current.src = videoUrl;
+      videoRef.current.load();
+    }
+  };
 
   // Format time (seconds) to MM:SS
   const formatTime = (timeInSeconds: number) => {
@@ -153,15 +205,10 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
               <p>{error}</p>
               <Button 
                 variant="outline" 
-                className="mt-4 bg-white/20 text-white hover:bg-white/30"
-                onClick={() => {
-                  setError(null);
-                  setIsLoading(true);
-                  if (videoRef.current) {
-                    videoRef.current.load();
-                  }
-                }}
+                className="mt-4 bg-white/20 text-white hover:bg-white/30 flex items-center gap-2"
+                onClick={retryVideo}
               >
+                <RefreshCw size={16} />
                 Reintentar
               </Button>
             </div>
@@ -170,13 +217,10 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
         
         <video
           ref={videoRef}
-          src={videoUrl}
           className="w-full aspect-video"
           onClick={togglePlay}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          preload="metadata"
           playsInline
+          preload="auto"
         />
         
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">

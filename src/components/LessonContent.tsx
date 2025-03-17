@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type LessonContent as LessonContentType } from '@/lib/data';
 import { toast } from '@/components/ui/use-toast';
 import AITutor from '@/components/AITutor';
-import { ArrowLeft, MessageCircle, BookOpen, Headphones, Volume2, Mic, Edit3 } from 'lucide-react';
+import { ArrowLeft, MessageCircle, BookOpen, Headphones, Volume2, Mic, Edit3, CheckCircle } from 'lucide-react';
 
 // Import the new components
 import ReadingExercise from './exercises/ReadingExercise';
@@ -44,7 +43,6 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
   
   useEffect(() => {
-    // Initialize speech recognition if supported
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (SpeechRecognitionAPI) {
@@ -65,7 +63,6 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
     }
     
     return () => {
-      // Stop any ongoing audio when component unmounts
       speechSynthesis.cancel();
     };
   }, []);
@@ -77,34 +74,27 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     
-    // Stop any ongoing audio
     speechSynthesis.cancel();
   };
   
   const handleModeChange = (mode: string) => {
     setActiveMode(mode);
     
-    // Stop any ongoing activities when changing modes
     if (isListening && speechRecognitionRef.current) {
       speechRecognitionRef.current.stop();
       setIsListening(false);
     }
     
-    // Stop any speech synthesis
     speechSynthesis.cancel();
     
-    // Reset audio example selection
     setActiveAudioExample(null);
   };
   
   const handlePlayAudio = (text: string, index: number) => {
-    // Stop any previous speech synthesis
     speechSynthesis.cancel();
     
-    // Set the active example
     setActiveAudioExample(index);
     
-    // Use the Web Speech API for text-to-speech
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
     utterance.onend = () => {
@@ -142,10 +132,8 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   const handleRepeatPhrase = (phrase: string) => {
     setSpokenText(phrase);
     
-    // First cancel any ongoing speech
     speechSynthesis.cancel();
     
-    // Then speak the new phrase
     const utterance = new SpeechSynthesisUtterance(phrase);
     utterance.lang = 'en-US';
     utterance.onend = () => {
@@ -158,7 +146,6 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   };
 
   const checkListeningAnswer = (userAnswer: string, correctAnswer: string) => {
-    // Case-insensitive comparison and ignore punctuation
     const normalizedUserAnswer = userAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
     const normalizedCorrectAnswer = correctAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
     
@@ -194,10 +181,8 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   };
   
   const handlePracticeComplete = () => {
-    // Calculate score based on selectedAnswers
     const score = Math.round((content.practice.length / content.practice.length) * 100);
     
-    // Show completion message
     toast({
       title: "¡Lección completada!",
       description: `Has completado esta lección con éxito.`,
@@ -207,7 +192,6 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
   };
   
   const handleComplete = () => {
-    // This would normally update the user progress in a real app
     navigate(`/module/${moduleId}`);
   };
   

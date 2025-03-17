@@ -62,9 +62,21 @@ const Lesson = () => {
       });
     }
     
-    // Get lesson content
+    // Preload video elements if available
     const content = getLessonContent(topicId);
     setLessonContent(content);
+    
+    // Pre-load the video if there's a videoUrl
+    if (content.videoUrl) {
+      const preloadVideo = new Audio(content.videoUrl);
+      preloadVideo.preload = 'metadata';
+      preloadVideo.onloadedmetadata = () => {
+        console.log("Video metadata preloaded successfully");
+      };
+      preloadVideo.onerror = (e) => {
+        console.error("Error preloading video metadata:", e);
+      };
+    }
     
     // We'll set loading to false after a short delay
     // This helps ensure the UI is ready for the video
