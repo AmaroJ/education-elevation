@@ -30,7 +30,8 @@ const Module = () => {
     
     // Check if browser supports the Web Speech API
     const speechSynthesisSupported = 'speechSynthesis' in window;
-    const speechRecognitionSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    const speechRecognitionSupported = 
+      'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
     
     if (!speechSynthesisSupported) {
       toast({

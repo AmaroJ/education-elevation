@@ -69,33 +69,28 @@ const Lesson = () => {
     // Preload video if it exists
     if (content.videoUrl) {
       try {
-        // Use a more lightweight approach to check if video exists
-        const request = new Request(content.videoUrl, { method: 'HEAD' });
+        // Create a video element to test if the video can be loaded
+        const videoElement = document.createElement('video');
+        videoElement.preload = 'metadata';
+        videoElement.muted = true;
         
-        fetch(request)
-          .then(response => {
-            if (response.ok) {
-              console.log('Video URL is valid:', content.videoUrl);
-            } else {
-              console.error('Video URL returned status:', response.status);
-              toast({
-                title: "Error con el video",
-                description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
-                variant: "destructive"
-              });
-            }
-          })
-          .catch(error => {
-            console.error('Error checking video URL:', error);
-            toast({
-              title: "Error con el video",
-              description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
-              variant: "destructive"
-            });
-          })
-          .finally(() => {
-            setIsLoading(false);
+        videoElement.onloadedmetadata = () => {
+          console.log('Video metadata loaded successfully:', content.videoUrl);
+          setIsLoading(false);
+        };
+        
+        videoElement.onerror = () => {
+          console.error('Error loading video:', content.videoUrl);
+          toast({
+            title: "Error con el video",
+            description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
+            variant: "destructive"
           });
+          setIsLoading(false);
+        };
+        
+        // Start loading the video
+        videoElement.src = content.videoUrl;
       } catch (error) {
         console.error('Error with video preloading:', error);
         setIsLoading(false);
