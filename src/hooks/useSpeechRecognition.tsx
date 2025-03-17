@@ -8,6 +8,10 @@ interface UseSpeechRecognitionProps {
   continuous?: boolean;
 }
 
+interface RecognitionError extends Event {
+  error: string;
+}
+
 const useSpeechRecognition = ({
   onResult,
   onError,
@@ -49,7 +53,7 @@ const useSpeechRecognition = ({
       onResult && onResult(transcript);
     };
     
-    recognitionInstance.onerror = (event) => {
+    recognitionInstance.onerror = (event: RecognitionError) => {
       const errorMessage = `Recognition error: ${event.error}`;
       console.error(errorMessage);
       onError && onError(errorMessage);
@@ -88,7 +92,7 @@ const useSpeechRecognition = ({
         console.error('Error stopping recognition during cleanup', e);
       }
     };
-  }, [continuous, language, onError, onResult]);
+  }, [continuous, language, onError, onResult, isListening]);
 
   // Start listening
   const startListening = useCallback(() => {

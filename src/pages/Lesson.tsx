@@ -66,38 +66,12 @@ const Lesson = () => {
     const content = getLessonContent(topicId);
     setLessonContent(content);
     
-    // Preload video if it exists
-    if (content.videoUrl) {
-      try {
-        // Create a video element to test if the video can be loaded
-        const videoElement = document.createElement('video');
-        videoElement.preload = 'metadata';
-        videoElement.muted = true;
-        
-        videoElement.onloadedmetadata = () => {
-          console.log('Video metadata loaded successfully:', content.videoUrl);
-          setIsLoading(false);
-        };
-        
-        videoElement.onerror = () => {
-          console.error('Error loading video:', content.videoUrl);
-          toast({
-            title: "Error con el video",
-            description: "El video de esta lección no se pudo cargar. Usando contenido de texto solamente.",
-            variant: "destructive"
-          });
-          setIsLoading(false);
-        };
-        
-        // Start loading the video
-        videoElement.src = content.videoUrl;
-      } catch (error) {
-        console.error('Error with video preloading:', error);
-        setIsLoading(false);
-      }
-    } else {
+    // We'll set loading to false after a short delay
+    // This helps ensure the UI is ready for the video
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      console.log("Lesson loading completed", { content });
+    }, 500);
   }, [moduleId, topicId, navigate]);
   
   if (isLoading) {

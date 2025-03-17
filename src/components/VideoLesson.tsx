@@ -28,6 +28,7 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
       setIsLoading(false);
+      console.log("Video metadata loaded successfully", { duration: video.duration });
     };
 
     const handleTimeUpdate = () => {
@@ -35,11 +36,12 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
     };
 
     const handleError = () => {
+      console.error("Video loading error:", video.error);
       setError('Error al cargar el video. Por favor, intenta de nuevo más tarde.');
       setIsLoading(false);
       toast({
         title: "Error con el video",
-        description: "No se pudo cargar el video. Verifica tu conexión a internet.",
+        description: "No se pudo cargar el video. Verifica tu conexión a internet o la URL del video.",
         variant: "destructive"
       });
     };
@@ -47,13 +49,24 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('error', handleError);
+    
+    // Add these additional event listeners for better debugging
+    video.addEventListener('canplay', () => console.log("Video can play"));
+    video.addEventListener('playing', () => console.log("Video is playing"));
+    video.addEventListener('waiting', () => console.log("Video is waiting/buffering"));
+
+    // Try to load the video
+    video.load();
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('error', handleError);
+      video.removeEventListener('canplay', () => {});
+      video.removeEventListener('playing', () => {});
+      video.removeEventListener('waiting', () => {});
     };
-  }, [toast]);
+  }, [toast, videoUrl]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -66,7 +79,7 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
         console.error('Error playing video:', err);
         toast({
           title: "Error al reproducir",
-          description: "No se pudo reproducir el video automáticamente. Intenta hacer clic en reproducir.",
+          description: "No se pudo reproducir el video automáticamente. Intenta hacer clic en reproducir nuevamente.",
           variant: "destructive"
         });
       });
@@ -138,7 +151,17 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
             <div className="text-white text-center p-4 max-w-md">
               <p className="text-xl font-bold mb-2">Error de Video</p>
               <p>{error}</p>
-              <Button variant="outline" className="mt-4 bg-white/20 text-white hover:bg-white/30">
+              <Button 
+                variant="outline" 
+                className="mt-4 bg-white/20 text-white hover:bg-white/30"
+                onClick={() => {
+                  setError(null);
+                  setIsLoading(true);
+                  if (videoRef.current) {
+                    videoRef.current.load();
+                  }
+                }}
+              >
                 Reintentar
               </Button>
             </div>
@@ -153,6 +176,7 @@ const VideoLesson = ({ videoUrl, title, subtitle }: VideoLessonProps) => {
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           preload="metadata"
+          playsInline
         />
         
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">

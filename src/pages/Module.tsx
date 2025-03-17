@@ -50,7 +50,9 @@ const Module = () => {
     }
     
     setModule(foundModule);
-    setIsLoading(false);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
   }, [moduleId, navigate]);
   
   if (isLoading || !module) {
