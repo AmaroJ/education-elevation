@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { ArrowRight, Play, Pause, Volume, VolumeX } from 'lucide-react';
+import { ArrowRight, Play, Pause, Volume, VolumeX, BookOpen, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type LessonContent } from '@/lib/data';
 import { useToast } from '@/components/ui/use-toast';
@@ -29,8 +29,27 @@ const ReadingExercise = ({
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [storyAudioPlaying, setStoryAudioPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const storyAudioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+
+  // Initialize story audio element if available
+  useEffect(() => {
+    if (content.storyAudio) {
+      storyAudioRef.current = new Audio(content.storyAudio);
+      
+      storyAudioRef.current.onplay = () => setStoryAudioPlaying(true);
+      storyAudioRef.current.onpause = () => setStoryAudioPlaying(false);
+      storyAudioRef.current.onended = () => setStoryAudioPlaying(false);
+    }
+    
+    return () => {
+      if (storyAudioRef.current) {
+        storyAudioRef.current.pause();
+      }
+    };
+  }, [content.storyAudio]);
 
   // Auto-play video when component mounts
   useEffect(() => {
@@ -104,6 +123,27 @@ const ReadingExercise = ({
       setIsMuted(!isMuted);
     }
   };
+  
+  const toggleStoryAudio = () => {
+    if (!storyAudioRef.current) return;
+    
+    if (storyAudioPlaying) {
+      storyAudioRef.current.pause();
+    } else {
+      storyAudioRef.current.play().catch(error => {
+        console.error("Error playing story audio:", error);
+        toast({
+          title: "Error al reproducir audio",
+          description: "No se pudo reproducir el audio de la historia.",
+          variant: "destructive"
+        });
+      });
+    }
+  };
+
+  // Determine if this is a story or karaoke
+  const isStory = !!content.storyText;
+  const isKaraoke = !!content.karaokeLyrics;
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -160,6 +200,57 @@ const ReadingExercise = ({
         className="prose prose-slate max-w-none"
         dangerouslySetInnerHTML={{ __html: content.content }}
       />
+      
+      {isStory && content.storyText && (
+        <div className="mt-8 bg-secondary/30 rounded-xl p-6 border border-secondary/20">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <BookOpen size={18} />
+              Historia completa
+            </h3>
+            {content.storyAudio && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={toggleStoryAudio}
+              >
+                {storyAudioPlaying ? <Pause size={16} /> : <Play size={16} />}
+                {storyAudioPlaying ? "Pausar narración" : "Escuchar narración"}
+              </Button>
+            )}
+          </div>
+          <div className="bg-background rounded-lg p-4 text-secondary-foreground">
+            {content.storyText}
+          </div>
+        </div>
+      )}
+      
+      {isKaraoke && content.karaokeLyrics && (
+        <div className="mt-8 bg-primary/10 rounded-xl p-6 border border-primary/20">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium flex items-center gap-2">
+              <Music size={18} />
+              Letra de la canción
+            </h3>
+            {content.karaokeUrl && (
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="bg-primary"
+              >
+                <Play size={16} className="mr-1" />
+                Iniciar karaoke
+              </Button>
+            )}
+          </div>
+          <div className="bg-background rounded-lg p-4 text-secondary-foreground">
+            {content.karaokeLyrics.map((line, index) => (
+              <p key={index} className="mb-2 last:mb-0">{line}</p>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="mt-8 bg-secondary/50 rounded-xl p-6">
         <h3 className="text-lg font-medium mb-4">Ejemplos prácticos</h3>

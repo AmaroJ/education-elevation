@@ -62,11 +62,11 @@ const Lesson = () => {
       });
     }
     
-    // Preload video elements if available
+    // Preload content based on topic type
     const content = getLessonContent(topicId);
     setLessonContent(content);
     
-    // Pre-load the video if there's a videoUrl
+    // Pre-load media based on content type
     if (content.videoUrl) {
       const preloadVideo = new Audio(content.videoUrl);
       preloadVideo.preload = 'metadata';
@@ -78,22 +78,53 @@ const Lesson = () => {
       };
     }
     
+    // Preload audio for stories or karaoke if available
+    if (content.storyAudio) {
+      const preloadAudio = new Audio(content.storyAudio);
+      preloadAudio.preload = 'metadata';
+    }
+    
+    if (content.karaokeUrl) {
+      const preloadKaraoke = new Audio(content.karaokeUrl);
+      preloadKaraoke.preload = 'metadata';
+    }
+    
     // We'll set loading to false after a short delay
-    // This helps ensure the UI is ready for the video
+    // This helps ensure the UI is ready for the media
     setTimeout(() => {
       setIsLoading(false);
       console.log("Lesson loading completed", { content });
     }, 500);
   }, [moduleId, topicId, navigate]);
   
+  // Show appropriate loading placeholder based on topic type
   if (isLoading) {
+    // Determine the topic type if available to show appropriate skeleton
+    const topicType = moduleId && topicId 
+      ? modules.find(m => m.id === moduleId)?.topics.find(t => t.id === topicId)?.type 
+      : 'lesson';
+    
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-28 pb-16 px-4 sm:px-6 md:px-8 lg:px-12 max-w-5xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-pulse flex flex-col items-center">
+            <div className="animate-pulse flex flex-col items-center w-full">
               <div className="h-12 w-2/3 bg-gray-200 rounded mb-4"></div>
+              
+              {topicType === 'karaoke' && (
+                <div className="w-full aspect-w-16 aspect-h-9 bg-gray-300 rounded mb-4"></div>
+              )}
+              
+              {topicType === 'story' && (
+                <>
+                  <div className="h-4 w-full bg-gray-200 rounded mb-3"></div>
+                  <div className="h-4 w-11/12 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-4 w-10/12 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-8 w-1/3 bg-gray-300 rounded mb-3"></div>
+                </>
+              )}
+              
               <div className="h-4 w-full bg-gray-200 rounded mb-3"></div>
               <div className="h-4 w-11/12 bg-gray-200 rounded mb-3"></div>
               <div className="h-4 w-10/12 bg-gray-200 rounded"></div>
