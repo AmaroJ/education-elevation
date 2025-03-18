@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -29,7 +28,6 @@ const Lesson = () => {
       return;
     }
     
-    // Verify that the module and topic exist
     const module = modules.find(m => m.id === moduleId);
     
     if (!module) {
@@ -54,7 +52,6 @@ const Lesson = () => {
       return;
     }
     
-    // Check if browser supports the Web Speech API
     const speechSynthesisSupported = 'speechSynthesis' in window;
     const speechRecognitionSupported = 
       'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
@@ -66,11 +63,9 @@ const Lesson = () => {
       });
     }
     
-    // Preload content based on topic type
     const content = getLessonContent(topicId);
     setLessonContent(content);
     
-    // Pre-load media based on content type
     if (content.videoUrl) {
       const preloadVideo = new Audio(content.videoUrl);
       preloadVideo.preload = 'metadata';
@@ -82,7 +77,6 @@ const Lesson = () => {
       };
     }
     
-    // Preload audio for stories or karaoke if available
     if (content.storyAudio) {
       const preloadAudio = new Audio(content.storyAudio);
       preloadAudio.preload = 'metadata';
@@ -93,8 +87,6 @@ const Lesson = () => {
       preloadKaraoke.preload = 'metadata';
     }
     
-    // We'll set loading to false after a short delay
-    // This helps ensure the UI is ready for the media
     setTimeout(() => {
       setIsLoading(false);
       console.log("Lesson loading completed", { content });
@@ -105,9 +97,7 @@ const Lesson = () => {
     setShowAITutorModal(!showAITutorModal);
   };
   
-  // Show appropriate loading placeholder based on topic type
   if (isLoading) {
-    // Determine the topic type if available to show appropriate skeleton
     const topicType = moduleId && topicId 
       ? modules.find(m => m.id === moduleId)?.topics.find(t => t.id === topicId)?.type 
       : 'lesson';

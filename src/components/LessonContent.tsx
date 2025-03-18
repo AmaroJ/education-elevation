@@ -91,12 +91,17 @@ const LessonContent = ({ content, moduleId, topicId }: LessonContentProps) => {
     handleRepeatPhrase
   };
   
+  // Calculate progress as a number (0-100)
+  const progressValue = activeTab === 'practice' 
+    ? ((practiceCompleted) / content.practice.length) * 100 
+    : 50;
+  
   return (
     <div className="animate-fade-in">
       <LessonHeader 
         moduleId={moduleId}
         lessonTitle={content.title}
-        progress={activeTab}
+        progress={progressValue}
         practiceTotal={content.practice.length}
         practiceCompleted={content.practice.length}
       />

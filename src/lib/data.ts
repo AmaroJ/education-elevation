@@ -1,11 +1,10 @@
-import { type } from "os";
 import { PracticeQuestion } from '@/types/practice';
 
 export interface Topic {
   id: string;
   title: string;
   description: string;
-  type: 'lesson' | 'story' | 'karaoke' | 'practice';
+  type: 'lesson' | 'story' | 'karaoke' | 'practice' | 'grammar' | 'vocabulary' | 'pronunciation';
   icon?: string;
   completed?: boolean;
   duration?: number; // Duration in minutes
@@ -18,7 +17,7 @@ export interface Module {
   image: string;
   topics: Topic[];
   progress?: number;
-  level?: string; // A1, A2, B1, etc.
+  level?: string; // Beginner, Intermediate, Advanced
 }
 
 export interface LessonContent {
@@ -49,6 +48,9 @@ export interface UserProgress {
   };
   totalHours: number;
   totalCompletedHours: number;
+  completedTopics: number;
+  totalScore: number;
+  streak: number;
 }
 
 export const userProgress: UserProgress = {
@@ -83,7 +85,10 @@ export const userProgress: UserProgress = {
     }
   },
   totalHours: 320,
-  totalCompletedHours: 28
+  totalCompletedHours: 28,
+  completedTopics: 3,
+  totalScore: 250,
+  streak: 5
 };
 
 export const modules: Module[] = [
@@ -93,32 +98,44 @@ export const modules: Module[] = [
     description: 'Aprende los conceptos básicos para comenzar a comunicarte en inglés.',
     image: '/images/modules/basics.jpg',
     progress: 30,
+    level: 'Beginner',
     topics: [
       {
         id: 'greetings',
         title: 'Saludos y Presentaciones',
         description: 'Aprende a saludar y presentarte en inglés',
         type: 'lesson',
-        completed: true
+        completed: true,
+        duration: 15
       },
       {
         id: 'numbers',
         title: 'Números y Contar',
         description: 'Aprende los números en inglés y cómo contar',
         type: 'lesson',
-        completed: true
+        completed: true,
+        duration: 20
       },
       {
         id: 'colors',
         title: 'Colores',
         description: 'Vocabulario de colores y descripciones',
-        type: 'lesson'
+        type: 'lesson',
+        duration: 15
+      },
+      {
+        id: 'alphabet',
+        title: 'El Alfabeto',
+        description: 'Aprende el alfabeto y la fonética básica',
+        type: 'pronunciation',
+        duration: 20
       },
       {
         id: 'little-red',
         title: 'Caperucita Roja',
         description: 'Lectura simplificada con vocabulario básico',
-        type: 'story'
+        type: 'story',
+        duration: 25
       }
     ]
   },
@@ -128,31 +145,43 @@ export const modules: Module[] = [
     description: 'Vocabulario y frases para situaciones cotidianas.',
     image: '/images/modules/daily-life.jpg',
     progress: 10,
+    level: 'Beginner',
     topics: [
       {
         id: 'family',
         title: 'Familia y Relaciones',
         description: 'Vocabulario sobre la familia y relaciones personales',
-        type: 'lesson',
-        completed: true
+        type: 'vocabulary',
+        completed: true,
+        duration: 25
       },
       {
         id: 'food',
         title: 'Comida y Restaurantes',
         description: 'Cómo pedir comida y hablar sobre alimentos',
-        type: 'lesson'
+        type: 'lesson',
+        duration: 30
       },
       {
         id: 'shopping',
         title: 'Compras',
         description: 'Vocabulario para ir de compras',
-        type: 'lesson'
+        type: 'lesson',
+        duration: 20
+      },
+      {
+        id: 'basic-verbs',
+        title: 'Verbos Básicos',
+        description: 'Verbos más usados en situaciones cotidianas',
+        type: 'grammar',
+        duration: 35
       },
       {
         id: 'hello-song',
         title: 'Canción: "Hello"',
         description: 'Aprende inglés con esta canción popular',
-        type: 'karaoke'
+        type: 'karaoke',
+        duration: 15
       }
     ]
   },
@@ -161,37 +190,224 @@ export const modules: Module[] = [
     title: 'Inglés para Viajar',
     description: 'Prepárate para comunicarte durante tus viajes.',
     image: '/images/modules/travel.jpg',
+    level: 'Intermediate',
     topics: [
       {
         id: 'airport',
         title: 'En el Aeropuerto',
         description: 'Vocabulario y frases útiles para el aeropuerto',
-        type: 'lesson'
+        type: 'lesson',
+        duration: 25
       },
       {
         id: 'hotel',
         title: 'Reservar Hotel',
         description: 'Cómo hacer reservaciones y pedir servicios',
-        type: 'lesson'
+        type: 'lesson',
+        duration: 20
       },
       {
         id: 'directions',
         title: 'Pedir Direcciones',
         description: 'Cómo orientarte y pedir indicaciones',
-        type: 'lesson'
+        type: 'lesson',
+        duration: 25
+      },
+      {
+        id: 'past-tense',
+        title: 'Tiempo Pasado',
+        description: 'Uso de verbos en pasado para narrar experiencias',
+        type: 'grammar',
+        duration: 40
       },
       {
         id: 'travel-story',
         title: 'Una Aventura en Londres',
         description: 'Historia corta sobre un viaje a Londres',
-        type: 'story'
+        type: 'story',
+        duration: 30
+      }
+    ]
+  },
+  {
+    id: 'grammar',
+    title: 'Gramática y Estructura',
+    description: 'Domina las reglas gramaticales y estructuras del inglés.',
+    image: '/images/modules/grammar.jpg',
+    level: 'Intermediate',
+    topics: [
+      {
+        id: 'present-tense',
+        title: 'Presente Simple',
+        description: 'Formación y uso del presente simple',
+        type: 'grammar',
+        duration: 30
+      },
+      {
+        id: 'present-continuous',
+        title: 'Presente Continuo',
+        description: 'Formación y uso del presente continuo',
+        type: 'grammar',
+        duration: 25
+      },
+      {
+        id: 'pronouns',
+        title: 'Pronombres',
+        description: 'Tipos y usos de pronombres en inglés',
+        type: 'grammar',
+        duration: 25
+      },
+      {
+        id: 'adjectives',
+        title: 'Adjetivos',
+        description: 'Uso y posición de adjetivos en inglés',
+        type: 'vocabulary',
+        duration: 20
+      },
+      {
+        id: 'articles',
+        title: 'Artículos',
+        description: 'Uso correcto de a, an, the',
+        type: 'grammar',
+        duration: 25
+      }
+    ]
+  },
+  {
+    id: 'advanced',
+    title: 'Inglés Avanzado',
+    description: 'Perfecciona tu inglés con temas y vocabulario avanzado.',
+    image: '/images/modules/advanced.jpg',
+    level: 'Advanced',
+    topics: [
+      {
+        id: 'conditionals',
+        title: 'Oraciones Condicionales',
+        description: 'Los diferentes tipos de condicionales y su uso',
+        type: 'grammar',
+        duration: 45
+      },
+      {
+        id: 'idioms',
+        title: 'Modismos y Expresiones',
+        description: 'Frases idiomáticas comunes en inglés',
+        type: 'vocabulary',
+        duration: 30
+      },
+      {
+        id: 'passive-voice',
+        title: 'Voz Pasiva',
+        description: 'Construcción y uso de la voz pasiva',
+        type: 'grammar',
+        duration: 35
+      },
+      {
+        id: 'phrasal-verbs',
+        title: 'Phrasal Verbs',
+        description: 'Verbos con partículas y su significado',
+        type: 'vocabulary',
+        duration: 40
+      },
+      {
+        id: 'debate',
+        title: 'Argumentación y Debate',
+        description: 'Cómo expresar opiniones y debatir en inglés',
+        type: 'practice',
+        duration: 60
+      }
+    ]
+  },
+  {
+    id: 'business',
+    title: 'Inglés de Negocios',
+    description: 'Comunícate efectivamente en entornos profesionales y comerciales.',
+    image: '/images/modules/business.jpg',
+    level: 'Advanced',
+    topics: [
+      {
+        id: 'job-interview',
+        title: 'Entrevista de Trabajo',
+        description: 'Preparación y frases clave para entrevistas laborales',
+        type: 'lesson',
+        duration: 40
+      },
+      {
+        id: 'business-email',
+        title: 'Correos Electrónicos',
+        description: 'Cómo escribir correos profesionales en inglés',
+        type: 'lesson',
+        duration: 30
+      },
+      {
+        id: 'presentations',
+        title: 'Presentaciones',
+        description: 'Cómo realizar presentaciones efectivas en inglés',
+        type: 'practice',
+        duration: 45
+      },
+      {
+        id: 'negotiation',
+        title: 'Negociación',
+        description: 'Términos y estrategias para negociar en inglés',
+        type: 'vocabulary',
+        duration: 35
+      },
+      {
+        id: 'formal-writing',
+        title: 'Escritura Formal',
+        description: 'Reglas y estilo para documentos formales',
+        type: 'lesson',
+        duration: 40
+      }
+    ]
+  },
+  {
+    id: 'academic',
+    title: 'Inglés Académico',
+    description: 'Desarrolla habilidades para estudios y publicaciones académicas.',
+    image: '/images/modules/academic.jpg',
+    level: 'Advanced',
+    topics: [
+      {
+        id: 'research-vocabulary',
+        title: 'Vocabulario de Investigación',
+        description: 'Términos comunes en textos académicos',
+        type: 'vocabulary',
+        duration: 35
+      },
+      {
+        id: 'essay-writing',
+        title: 'Redacción de Ensayos',
+        description: 'Estructura y estilo para ensayos académicos',
+        type: 'lesson',
+        duration: 50
+      },
+      {
+        id: 'citations',
+        title: 'Citas y Referencias',
+        description: 'Cómo citar fuentes en trabajos académicos',
+        type: 'lesson',
+        duration: 30
+      },
+      {
+        id: 'academic-reading',
+        title: 'Lectura Académica',
+        description: 'Estrategias para la comprensión de textos académicos',
+        type: 'practice',
+        duration: 45
+      },
+      {
+        id: 'scientific-presentation',
+        title: 'Presentación Científica',
+        description: 'Cómo presentar investigaciones en inglés',
+        type: 'practice',
+        duration: 55
       }
     ]
   }
 ];
 
 export const getLessonContent = (topicId: string): LessonContent => {
-  // Default content structure
   const defaultContent: LessonContent = {
     title: 'Lección no encontrada',
     content: '<p>Lo sentimos, el contenido de esta lección no está disponible.</p>',
@@ -199,7 +415,6 @@ export const getLessonContent = (topicId: string): LessonContent => {
     practice: []
   };
 
-  // Return specific content based on topic ID
   switch (topicId) {
     case 'greetings':
       return {
@@ -569,3 +784,4 @@ The wolf ran away. Little Red Riding Hood never talked to strangers again.`,
       return defaultContent;
   }
 };
+
