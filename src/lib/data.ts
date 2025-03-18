@@ -1,4 +1,5 @@
 import { type } from "os";
+import { PracticeQuestion } from '@/types/practice';
 
 export interface Topic {
   id: string;
@@ -7,6 +8,7 @@ export interface Topic {
   type: 'lesson' | 'story' | 'karaoke' | 'practice';
   icon?: string;
   completed?: boolean;
+  duration?: number; // Duration in minutes
 }
 
 export interface Module {
@@ -16,6 +18,7 @@ export interface Module {
   image: string;
   topics: Topic[];
   progress?: number;
+  level?: string; // A1, A2, B1, etc.
 }
 
 export interface LessonContent {
@@ -32,16 +35,56 @@ export interface LessonContent {
   karaokeLyrics?: string[];
 }
 
-export interface PracticeQuestion {
-  type: 'multiple-choice' | 'fill-blank' | 'matching' | 'speaking';
-  question: string;
-  options?: string[];
-  correctAnswer: string | string[];
-  feedback?: {
-    correct: string;
-    incorrect: string;
+export interface UserProgress {
+  modules: {
+    [moduleId: string]: {
+      progress: number;
+      topics: {
+        [topicId: string]: {
+          completed: boolean;
+          score?: number;
+        };
+      };
+    };
   };
+  totalHours: number;
+  totalCompletedHours: number;
 }
+
+export const userProgress: UserProgress = {
+  modules: {
+    basics: {
+      progress: 30,
+      topics: {
+        greetings: {
+          completed: true,
+          score: 85
+        },
+        numbers: {
+          completed: true,
+          score: 90
+        },
+        colors: {
+          completed: false
+        }
+      }
+    },
+    'daily-life': {
+      progress: 10,
+      topics: {
+        family: {
+          completed: true,
+          score: 75
+        },
+        food: {
+          completed: false
+        }
+      }
+    }
+  },
+  totalHours: 320,
+  totalCompletedHours: 28
+};
 
 export const modules: Module[] = [
   {
