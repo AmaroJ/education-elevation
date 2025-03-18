@@ -58,9 +58,7 @@ const LessonHeader = ({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>Progreso de la lección</span>
             <Progress 
-              value={progress === 'practice' 
-                ? ((practiceCompleted) / practiceTotal) * 100 
-                : 50} 
+              value={progress} 
               className="w-24 h-2" 
             />
           </div>

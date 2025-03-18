@@ -3,14 +3,18 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import LessonContent from '@/components/LessonContent';
+import AITutorModal from '@/components/AITutorModal';
 import { modules, getLessonContent } from '@/lib/data';
 import { toast } from '@/components/ui/use-toast';
+import { MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Lesson = () => {
   const { moduleId, topicId } = useParams<{ moduleId: string; topicId: string }>();
   const navigate = useNavigate();
   const [lessonContent, setLessonContent] = useState(getLessonContent(topicId || ''));
   const [isLoading, setIsLoading] = useState(true);
+  const [showAITutorModal, setShowAITutorModal] = useState(false);
   
   useEffect(() => {
     setIsLoading(true);
@@ -97,6 +101,10 @@ const Lesson = () => {
     }, 500);
   }, [moduleId, topicId, navigate]);
   
+  const toggleAITutorModal = () => {
+    setShowAITutorModal(!showAITutorModal);
+  };
+  
   // Show appropriate loading placeholder based on topic type
   if (isLoading) {
     // Determine the topic type if available to show appropriate skeleton
@@ -140,10 +148,27 @@ const Lesson = () => {
       <Header />
       
       <main className="pt-28 pb-16 px-4 sm:px-6 md:px-8 lg:px-12 max-w-5xl mx-auto">
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button 
+            onClick={toggleAITutorModal}
+            className="h-14 w-14 rounded-full"
+            variant="default"
+            title="Abrir Tutor IA"
+          >
+            <MessageCircle size={24} />
+          </Button>
+        </div>
+        
         <LessonContent 
           content={lessonContent} 
           moduleId={moduleId || ''} 
           topicId={topicId || ''} 
+        />
+        
+        <AITutorModal 
+          isOpen={showAITutorModal} 
+          onClose={toggleAITutorModal} 
+          lessonContent={lessonContent.content}
         />
       </main>
     </div>
